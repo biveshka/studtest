@@ -38,7 +38,10 @@
     overflow: hidden;
 }
 
-/* Анимации */
+.fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
+
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -48,8 +51,4 @@
         opacity: 1;
         transform: translateY(0);
     }
-}
-
-.screen.active {
-    animation: fadeIn 0.3s ease-out;
 }
