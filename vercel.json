@@ -7,28 +7,36 @@
       "config": {
         "distDir": "dist"
       }
-    },
-    {
-      "src": "simple.html",
-      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
-      "src": "/simple",
-      "dest": "/simple.html"
-    },
-    {
-      "src": "/simple.css",
-      "dest": "/simple.css"
-    },
-    {
-      "src": "/simple.js",
-      "dest": "/simple.js"
+      "src": "/simple/(.*)",
+      "dest": "/public/simple/$1"
     },
     {
       "src": "/(.*)",
       "dest": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/simple/(.*)\\.js",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/javascript"
+        }
+      ]
+    },
+    {
+      "source": "/simple/(.*)\\.css",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/css"
+        }
+      ]
     }
   ]
 }
