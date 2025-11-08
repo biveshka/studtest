@@ -105,7 +105,6 @@ class SimpleQuizApp {
         if (targetScreen) {
             targetScreen.classList.add('active');
             targetScreen.classList.remove('hidden');
-            targetScreen.classList.add('fade-in');
         }
     }
 
@@ -159,10 +158,8 @@ class SimpleQuizApp {
         this.questionText.textContent = question.question_text;
         
         this.answersContainer.innerHTML = question.options.map((option, index) => `
-            <div class="answer-option w-full text-left p-4 rounded-lg border-2 transition-all duration-200 ${
-                this.userAnswers[question.id] === index 
-                    ? 'border-blue-500 bg-blue-50 text-blue-700 selected' 
-                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+            <div class="answer-option ${
+                this.userAnswers[question.id] === index ? 'selected' : ''
             }" data-question-id="${question.id}" data-answer-index="${index}">
                 ${option}
             </div>
