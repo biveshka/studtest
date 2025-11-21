@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AdminPanel from './components/AdminPanel';
 import AdminLogin from './components/AdminLogin';
 import UserInterface from './components/UserInterface';
-
-const API_BASE_URL = 'http://localhost:5000/api';
+import { API_BASE_URL } from './config';
 
 function App() {
   const [currentView, setCurrentView] = useState('roleSelection');

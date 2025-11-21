@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import TestReviews from './TestReviews';
-
-const API_BASE_URL = 'http://localhost:5000/api';
+import { API_BASE_URL } from '../config';
 
 const UserInterface = ({ tests, tags, selectedTag, onTagFilter, onAddReview, onBackToRoleSelection }) => {
   const [currentScreen, setCurrentScreen] = useState('testList');
