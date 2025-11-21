@@ -804,3 +804,27 @@ td {
   color: #155724;
   text-align: center;
 }
+/* Добавьте в App.css */
+.loading-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.loading-content {
+  text-align: center;
+  padding: 40px;
+}
+
+.loading-content h2 {
+  margin-bottom: 15px;
+  font-size: 2em;
+}
+
+.loading-content p {
+  font-size: 1.2em;
+  opacity: 0.8;
+}

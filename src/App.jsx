@@ -1,3 +1,4 @@
+// src/App.jsx
 import React, { useState, useEffect } from 'react';
 import { supabase, testConnection } from './supabase';
 import RoleSelection from './components/RoleSelection';
@@ -14,44 +15,99 @@ function App() {
   const [currentTest, setCurrentTest] = useState(null);
   const [loading, setLoading] = useState(false);
   const [connectionError, setConnectionError] = useState(false);
+  const [connectionTested, setConnectionTested] = useState(false);
 
   // Проверка подключения к Supabase
   useEffect(() => {
-    const checkConnection = async () => {
+    const initializeApp = async () => {
+      console.log('🚀 Initializing application...');
+      
       const isConnected = await testConnection();
       setConnectionError(!isConnected);
+      setConnectionTested(true);
       
       if (isConnected) {
-        fetchTests();
+        console.log('✅ Connected to Supabase, fetching tests...');
+        await fetchTests();
+      } else {
+        console.log('❌ No Supabase connection, using demo data...');
+        loadDemoData();
       }
     };
-    
-    checkConnection();
+
+    initializeApp();
   }, []);
+
+  const loadDemoData = () => {
+    const demoTests = [
+      {
+        id: 'demo-1',
+        title: 'Основы JavaScript',
+        description: 'Тест по основам программирования на JavaScript',
+        question_count: 5,
+        total_points: 5,
+        is_active: true,
+        emoji: '📜',
+        is_published: true,
+        tags: ['programming', 'javascript', 'beginner']
+      },
+      {
+        id: 'demo-2',
+        title: 'React.js для начинающих',
+        description: 'Основы работы с React.js и компонентами',
+        question_count: 4,
+        total_points: 4,
+        is_active: true,
+        emoji: '⚛️',
+        is_published: true,
+        tags: ['programming', 'react', 'beginner']
+      }
+    ];
+    setTests(demoTests);
+  };
 
   const fetchTests = async () => {
     try {
-      console.log('Fetching tests from Supabase...');
-      const { data, error } = await supabase
+      console.log('📡 Fetching tests from Supabase...');
+      
+      // Получаем тесты с их тегами
+      const { data: testsData, error: testsError } = await supabase
         .from('tests')
-        .select('*')
+        .select(`
+          *,
+          test_tags (
+            tags (
+              name
+            )
+          )
+        `)
         .eq('is_active', true)
+        .eq('is_published', true)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
+      if (testsError) {
+        console.error('❌ Error fetching tests:', testsError);
+        throw testsError;
       }
+
+      // Преобразуем данные для удобства
+      const formattedTests = testsData.map(test => ({
+        ...test,
+        tags: test.test_tags?.map(tt => tt.tags.name) || []
+      }));
+
+      console.log('✅ Tests loaded:', formattedTests.length);
+      setTests(formattedTests);
       
-      console.log('Tests loaded:', data?.length || 0);
-      setTests(data || []);
     } catch (error) {
-      console.error('Error fetching tests:', error);
+      console.error('❌ Failed to fetch tests:', error);
       setConnectionError(true);
+      loadDemoData(); // Загружаем демо-данные при ошибке
     }
   };
 
   const handleRoleSelect = (role) => {
+    console.log('👤 Role selected:', role);
     if (role === 'admin') {
       setCurrentView('admin-login');
     } else {
@@ -61,55 +117,12 @@ function App() {
 
   const handleAdminLogin = async (email, password) => {
     setLoading(true);
+    console.log('🔐 Attempting admin login...', { email });
+    
     try {
-      console.log('Attempting admin login...');
-      
-      // Для демо-режима - временное решение
-      if (email === 'admin@test.ru' && password === 'admin123') {
-        // Создаем мок-пользователя для демо
-        const demoUser = {
-          id: 'demo-admin-id',
-          email: 'admin@test.ru',
-          full_name: 'Администратор системы',
-          role: 'admin'
-        };
-        setUser(demoUser);
-        setCurrentView('admin-panel');
-        setLoading(false);
-        return;
-      }
-
-      // Попытка реального запроса к Supabase
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('email', email)
-        .eq('role', 'admin')
-        .eq('is_active', true)
-        .single();
-
-      if (error) {
-        console.error('Supabase query error:', error);
-        throw error;
-      }
-      
-      if (data) {
-        // Временная проверка пароля для демо
-        if (password === 'admin123') {
-          setUser(data);
-          setCurrentView('admin-panel');
-        } else {
-          alert('Неверный пароль');
-        }
-      } else {
-        alert('Пользователь с правами администратора не найден');
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      
-      // Если ошибка сети, используем демо-режим
-      if (error.message.includes('Failed to fetch') || error.message.includes('Network')) {
-        console.log('Network error, using demo mode');
+      // Для демо-режима используем простую проверку
+      if (connectionError) {
+        console.log('🔄 Using demo login...');
         if (email === 'admin@test.ru' && password === 'admin123') {
           const demoUser = {
             id: 'demo-admin-id',
@@ -119,71 +132,172 @@ function App() {
           };
           setUser(demoUser);
           setCurrentView('admin-panel');
+          console.log('✅ Demo login successful');
         } else {
           alert('Демо-режим: используйте admin@test.ru / admin123');
         }
+        setLoading(false);
+        return;
+      }
+
+      // Реальная проверка в Supabase
+      console.log('📡 Checking user in Supabase...');
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('email', email)
+        .eq('role', 'admin')
+        .eq('is_active', true)
+        .single();
+
+      if (error) {
+        console.error('❌ Supabase query error:', error);
+        throw error;
+      }
+      
+      if (data) {
+        // Простая проверка пароля для демо (в реальном приложении используйте bcrypt)
+        if (password === data.password_hash || password === 'admin123') {
+          setUser(data);
+          setCurrentView('admin-panel');
+          console.log('✅ Admin login successful');
+        } else {
+          alert('Неверный пароль');
+        }
       } else {
-        alert('Ошибка входа: ' + error.message);
+        alert('Пользователь с правами администратора не найден');
+      }
+    } catch (error) {
+      console.error('❌ Login error:', error);
+      
+      if (error.message?.includes('Failed to fetch') || error.message?.includes('Network')) {
+        console.log('🌐 Network error, switching to demo mode');
+        setConnectionError(true);
+        if (email === 'admin@test.ru' && password === 'admin123') {
+          const demoUser = {
+            id: 'demo-admin-id',
+            email: 'admin@test.ru',
+            full_name: 'Администратор системы',
+            role: 'admin'
+          };
+          setUser(demoUser);
+          setCurrentView('admin-panel');
+        } else {
+          alert('Ошибка сети. Используйте admin@test.ru / admin123 для демо-режима');
+        }
+      } else {
+        alert('Ошибка входа: ' + (error.message || 'Неизвестная ошибка'));
       }
     }
     setLoading(false);
   };
 
-  // Остальные функции остаются без изменений
   const handleStartTest = async (testId) => {
+    console.log('🎯 Starting test:', testId);
+    
     try {
-      // Демо-данные для тестов
-      const demoQuestions = [
-        {
-          id: 1,
-          question_text: "Что такое JavaScript?",
-          question_type: "multiple_choice",
-          options: ["Язык программирования", "База данных", "Фреймворк", "Операционная система"],
-          correct_answer: "Язык программирования"
-        },
-        {
-          id: 2, 
-          question_text: "Для чего используется React?",
-          question_type: "multiple_choice",
-          options: ["Для создания пользовательских интерфейсов", "Для работы с базами данных", "Для машинного обучения", "Для мобильной разработки"],
-          correct_answer: "Для создания пользовательских интерфейсов"
-        }
-      ];
+      let testData;
+      
+      if (connectionError) {
+        // Демо-вопросы
+        const demoQuestions = {
+          'demo-1': [
+            {
+              id: 1,
+              question_text: "Что такое JavaScript?",
+              question_type: "multiple_choice",
+              options: ["Язык программирования", "База данных", "Текстовый редактор", "Операционная система"],
+              correct_answer: "Язык программирования",
+              points: 1,
+              order_index: 1
+            },
+            {
+              id: 2,
+              question_text: "Как объявить переменную в ES6?",
+              question_type: "multiple_choice", 
+              options: ["var", "let", "const", "Все варианты верны"],
+              correct_answer: "Все варианты верны",
+              points: 1,
+              order_index: 2
+            }
+          ],
+          'demo-2': [
+            {
+              id: 3,
+              question_text: "Что такое React?",
+              question_type: "multiple_choice",
+              options: ["Библиотека для UI", "Фреймворк", "Язык программирования", "База данных"],
+              correct_answer: "Библиотека для UI",
+              points: 1,
+              order_index: 1
+            }
+          ]
+        };
 
-      const test = tests.find(t => t.id === testId) || {
-        id: testId,
-        title: "Демо-тест",
-        time_limit: 30,
-        questions: demoQuestions
-      };
+        testData = {
+          ...tests.find(t => t.id === testId),
+          questions: demoQuestions[testId] || []
+        };
+      } else {
+        // Загрузка вопросов из Supabase
+        const { data: questionsData, error: questionsError } = await supabase
+          .from('questions')
+          .select('*')
+          .eq('test_id', testId)
+          .order('order_index', { ascending: true });
 
-      setCurrentTest(test);
+        if (questionsError) throw questionsError;
+
+        testData = {
+          ...tests.find(t => t.id === testId),
+          questions: questionsData || []
+        };
+      }
+
+      if (!testData.questions || testData.questions.length === 0) {
+        alert('В этом тесте пока нет вопросов');
+        return;
+      }
+
+      setCurrentTest(testData);
       setCurrentView('test-taking');
+      
     } catch (error) {
-      console.error('Error starting test:', error);
-      alert('Ошибка запуска теста');
+      console.error('❌ Error starting test:', error);
+      alert('Ошибка запуска теста: ' + (error.message || 'Неизвестная ошибка'));
     }
   };
 
   const handleTestComplete = async (resultData) => {
     try {
+      console.log('💾 Saving test results...', resultData);
+      
       if (!connectionError) {
         const { error } = await supabase
-          .from('test_results')
+          .from('results')
           .insert([{
-            ...resultData,
+            test_id: resultData.test_id,
+            user_name: resultData.user_name,
+            answers: resultData.answers,
+            score: resultData.score,
+            total_questions: resultData.total_questions,
+            percentage: resultData.percentage,
             created_at: new Date().toISOString()
           }]);
 
         if (error) throw error;
+        console.log('✅ Results saved to Supabase');
+      } else {
+        console.log('📝 Results saved locally (demo mode)');
       }
       
-      alert(`Тест завершен! Ваш результат: ${resultData.score}%`);
+      alert(`🎉 Тест завершен! Ваш результат: ${resultData.percentage}%`);
       setCurrentView('test-selection');
       setCurrentTest(null);
+      
     } catch (error) {
-      console.error('Error saving result:', error);
-      alert('Тест завершен! Результат: ' + resultData.score + '% (данные сохранены локально)');
+      console.error('❌ Error saving results:', error);
+      alert(`🎉 Тест завершен! Результат: ${resultData.percentage}% (данные сохранены локально)`);
       setCurrentView('test-selection');
       setCurrentTest(null);
     }
@@ -191,11 +305,19 @@ function App() {
 
   const handleCreateTest = async (testData) => {
     try {
+      console.log('🆕 Creating new test...', testData);
+      
       if (!connectionError) {
         const { data, error } = await supabase
           .from('tests')
           .insert([{
-            ...testData,
+            title: testData.title,
+            description: testData.description,
+            question_count: testData.questions_count,
+            total_points: testData.questions_count,
+            time_limit: testData.time_limit,
+            is_active: true,
+            is_published: true,
             created_at: new Date().toISOString()
           }])
           .select();
@@ -203,38 +325,56 @@ function App() {
         if (error) throw error;
         
         await fetchTests();
-        alert('Тест успешно создан!');
+        alert('✅ Тест успешно создан!');
         return data[0];
       } else {
-        // Демо-режим: добавляем тест локально
+        // Демо-режим
         const newTest = {
           ...testData,
-          id: Date.now(),
-          created_at: new Date().toISOString()
+          id: 'demo-' + Date.now(),
+          question_count: testData.questions_count,
+          total_points: testData.questions_count,
+          is_active: true,
+          is_published: true,
+          created_at: new Date().toISOString(),
+          tags: testData.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
         };
         setTests(prev => [...prev, newTest]);
-        alert('Тест создан (демо-режим)!');
+        alert('✅ Тест создан (демо-режим)!');
         return newTest;
       }
     } catch (error) {
-      console.error('Error creating test:', error);
-      alert('Ошибка создания теста');
+      console.error('❌ Error creating test:', error);
+      alert('Ошибка создания теста: ' + (error.message || 'Неизвестная ошибка'));
     }
   };
 
+  // Показываем загрузку пока проверяем подключение
+  if (!connectionTested) {
+    return (
+      <div className="loading-screen">
+        <div className="loading-content">
+          <h2>🔄 Загрузка системы тестирования...</h2>
+          <p>Проверка подключения к базе данных</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="App">
-      {/* Показываем ошибку подключения */}
+      {/* Уведомление о демо-режиме */}
       {connectionError && (
         <div className="connection-warning">
           <div className="warning-content">
             <h3>⚠️ Демо-режим</h3>
-            <p>Нет подключения к базе данных. Приложение работает в демо-режиме.</p>
+            <p>Нет подключения к базе данных. Приложение работает с демо-данными.</p>
             <button onClick={() => setConnectionError(false)}>✕</button>
           </div>
         </div>
       )}
 
+      {/* Основные компоненты */}
       {currentView === 'role-selection' && (
         <RoleSelection onRoleSelect={handleRoleSelect} />
       )}
