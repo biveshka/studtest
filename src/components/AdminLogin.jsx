@@ -1,5 +1,10 @@
 import React, { useState } from 'react';
-import { mockAdmin } from '../data/mockData';
+
+// Мок-данные прямо в компоненте
+const mockAdmin = {
+  email: "admin@test.ru",
+  password: "admin123"
+};
 
 const AdminLogin = ({ onBack, onLogin }) => {
   const [formData, setFormData] = useState({
@@ -14,7 +19,7 @@ const AdminLogin = ({ onBack, onLogin }) => {
       ...formData,
       [e.target.name]: e.target.value
     });
-    setError(''); // Очищаем ошибку при изменении поля
+    setError('');
   };
 
   const handleSubmit = async (e) => {
@@ -22,10 +27,10 @@ const AdminLogin = ({ onBack, onLogin }) => {
     setLoading(true);
     setError('');
 
-    // Имитация проверки администратора с задержкой
+    // Имитация проверки администратора
     setTimeout(() => {
       if (formData.email === mockAdmin.email && formData.password === mockAdmin.password) {
-        onLogin(true); // Успешный вход
+        onLogin(true);
       } else {
         setError('Неверный email или пароль');
       }
@@ -38,7 +43,6 @@ const AdminLogin = ({ onBack, onLogin }) => {
       email: mockAdmin.email,
       password: mockAdmin.password
     });
-    setError(''); // Очищаем ошибку при использовании тестовых данных
   };
 
   return (
@@ -76,7 +80,6 @@ const AdminLogin = ({ onBack, onLogin }) => {
             />
           </div>
 
-          {/* Показываем ошибку только если она есть */}
           {error && (
             <div className="error-message">
               {error}
