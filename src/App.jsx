@@ -1,8 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
-import { supabase } from './supabase';
+import RoleSelection from './components/RoleSelection';
+import TestSelection from './components/TestSelection';
+import AdminLogin from './components/AdminLogin';
+import AdminPanel from './components/AdminPanel';
 import './App.css';
-
 
 function App() {
   const [currentView, setCurrentView] = useState('role-selection');
@@ -10,24 +11,39 @@ function App() {
   const [tests, setTests] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Загрузка тестов из Supabase
+  // Временные мок-данные
   useEffect(() => {
-    fetchTests();
+    const mockTests = [
+      {
+        id: 1,
+        title: "Основы JavaScript",
+        description: "Тест по основам программирования на JavaScript",
+        tags: ["programming", "javascript", "beginner"],
+        questions_count: 10,
+        time_limit: 30,
+        difficulty: "beginner"
+      },
+      {
+        id: 2,
+        title: "React.js основы", 
+        description: "Тестирование знаний по React.js и компонентам",
+        tags: ["react", "frontend", "javascript"],
+        questions_count: 15,
+        time_limit: 45,
+        difficulty: "intermediate"
+      },
+      {
+        id: 3,
+        title: "Базы данных SQL",
+        description: "Тест по основам реляционных баз данных и SQL",
+        tags: ["database", "sql", "backend"],
+        questions_count: 20,
+        time_limit: 60,
+        difficulty: "intermediate"
+      }
+    ];
+    setTests(mockTests);
   }, []);
-
-  const fetchTests = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('tests')
-        .select('*')
-        .eq('is_active', true);
-
-      if (error) throw error;
-      setTests(data || []);
-    } catch (error) {
-      console.error('Error fetching tests:', error);
-    }
-  };
 
   const handleRoleSelect = (role) => {
     if (role === 'admin') {
@@ -39,31 +55,23 @@ function App() {
 
   const handleAdminLogin = async (email, password) => {
     setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('admins')
-        .select('*')
-        .eq('email', email)
-        .eq('password', password)
-        .single();
-
-      if (error) throw error;
-      
-      if (data) {
-        setUser(data);
+    // Временная мок-авторизация
+    setTimeout(() => {
+      if (email === 'admin@test.ru' && password === 'admin123') {
+        setUser({ name: 'Администратор', email });
         setCurrentView('admin-panel');
+      } else {
+        alert('Неверные данные для входа');
       }
-    } catch (error) {
-      console.error('Login error:', error);
-      alert('Ошибка входа: ' + error.message);
-    }
-    setLoading(false);
+      setLoading(false);
+    }, 1000);
   };
 
   const handleStartTest = (testId) => {
-    setCurrentView('test-taking');
-    // Здесь логика начала теста
+    alert(`Запуск теста ID: ${testId}\n\nФункционал тестирования в разработке...`);
   };
+
+  console.log('Текущий вид:', currentView); // Для отладки
 
   return (
     <div className="App">
@@ -92,6 +100,16 @@ function App() {
           user={user}
           onRoleChange={() => setCurrentView('role-selection')}
         />
+      )}
+
+      {/* Если ничего не отображается */}
+      {!currentView && (
+        <div style={{ padding: '50px', textAlign: 'center' }}>
+          <h1>Ошибка загрузки</h1>
+          <button onClick={() => setCurrentView('role-selection')}>
+            Вернуться к выбору роли
+          </button>
+        </div>
       )}
     </div>
   );

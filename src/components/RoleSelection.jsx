@@ -1,4 +1,3 @@
-// src/components/RoleSelection.jsx
 import React from 'react';
 
 const RoleSelection = ({ onRoleSelect }) => {
