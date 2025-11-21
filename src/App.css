@@ -1,259 +1,497 @@
-/* Основные стили */
+/* src/App.css */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+}
+
 .App {
+  min-height: 100vh;
+}
+
+.container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
-  font-family: Arial, sans-serif;
 }
 
 /* Выбор роли */
 .role-selection {
-  text-align: center;
-  padding: 50px 20px;
-}
-
-.role-buttons {
   display: flex;
-  gap: 20px;
+  align-items: center;
   justify-content: center;
-  margin-top: 30px;
+  min-height: 100vh;
+  padding: 20px;
 }
 
-.role-buttons button {
-  padding: 15px 30px;
-  font-size: 18px;
-  border: none;
-  border-radius: 8px;
-  background: #007bff;
+.role-selection h1 {
+  text-align: center;
   color: white;
-  cursor: pointer;
-  transition: background 0.3s;
+  margin-bottom: 50px;
+  font-size: 2.5em;
 }
 
-.role-buttons button:hover {
-  background: #0056b3;
+.role-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  max-width: 800px;
+}
+
+.role-card {
+  background: white;
+  padding: 40px 30px;
+  border-radius: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.role-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+
+.role-icon {
+  font-size: 4em;
+  margin-bottom: 20px;
+}
+
+.role-card h3 {
+  color: #333;
+  margin-bottom: 10px;
+  font-size: 1.5em;
+}
+
+.role-card p {
+  color: #666;
+  font-size: 1.1em;
 }
 
 /* Выбор тестов */
 .test-selection {
-  padding: 20px;
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding: 20px 0;
 }
 
-.header {
+.test-selection .header {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 40px;
 }
 
-.filters {
-  margin-bottom: 20px;
+.test-selection .header h1 {
+  color: #333;
+  margin-bottom: 10px;
+  font-size: 2.2em;
 }
 
-.tag-buttons {
+.test-selection .header p {
+  color: #666;
+  font-size: 1.2em;
+}
+
+.filters-section {
+  background: white;
+  padding: 25px;
+  border-radius: 15px;
+  margin-bottom: 25px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.filters-section h3 {
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.tags-container {
   display: flex;
-  gap: 10px;
   flex-wrap: wrap;
-  margin-top: 10px;
+  gap: 10px;
 }
 
-.tag-btn {
+.tag {
   padding: 8px 16px;
-  border: 1px solid #ddd;
-  background: #f8f9fa;
+  background: #f0f0f0;
+  border: none;
   border-radius: 20px;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.3s ease;
+  color: #666;
 }
 
-.tag-btn.active {
-  background: #007bff;
+.tag.active {
+  background: #667eea;
   color: white;
-  border-color: #007bff;
 }
 
 .role-change-btn {
-  padding: 10px 20px;
   background: #6c757d;
   color: white;
   border: none;
-  border-radius: 5px;
+  padding: 12px 25px;
+  border-radius: 8px;
   cursor: pointer;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
+  font-size: 1em;
+  transition: background 0.3s ease;
+}
+
+.role-change-btn:hover {
+  background: #5a6268;
 }
 
 .tests-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 25px;
 }
 
 .test-card {
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  padding: 20px;
   background: white;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease;
 }
 
-.test-card h3 {
-  margin-top: 0;
+.test-card:hover {
+  transform: translateY(-5px);
+}
+
+.test-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  margin-bottom: 15px;
+}
+
+.test-header h3 {
   color: #333;
+  margin-right: 15px;
+}
+
+.difficulty {
+  padding: 4px 12px;
+  border-radius: 15px;
+  font-size: 0.8em;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.difficulty.beginner {
+  background: #e8f5e8;
+  color: #2e7d32;
+}
+
+.difficulty.intermediate {
+  background: #fff3e0;
+  color: #ef6c00;
+}
+
+.difficulty.advanced {
+  background: #fbe9e7;
+  color: #d84315;
+}
+
+.test-description {
+  color: #666;
+  margin-bottom: 20px;
+  line-height: 1.5;
 }
 
 .test-meta {
   display: flex;
-  justify-content: space-between;
-  margin: 15px 0;
+  gap: 20px;
+  margin-bottom: 15px;
+  color: #888;
   font-size: 0.9em;
-  color: #666;
 }
 
 .test-tags {
   display: flex;
-  gap: 5px;
   flex-wrap: wrap;
-  margin-bottom: 15px;
+  gap: 8px;
+  margin-bottom: 20px;
 }
 
-.tag {
-  background: #e9ecef;
-  padding: 3px 8px;
-  border-radius: 10px;
+.test-tag {
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 4px 10px;
+  border-radius: 12px;
   font-size: 0.8em;
-  color: #495057;
 }
 
 .start-test-btn {
   width: 100%;
-  padding: 10px;
-  background: #28a745;
+  padding: 12px;
+  background: #667eea;
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 8px;
+  font-size: 1em;
   cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.start-test-btn:hover {
+  background: #5a6fd8;
 }
 
 .no-tests {
-  text-align: center;
-  padding: 40px;
-  color: #666;
   grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
 }
 
-/* Форма входа администратора */
+/* Вход администратора */
 .admin-login {
-  max-width: 400px;
-  margin: 0 auto;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 20px;
 }
 
 .back-btn {
   background: none;
   border: none;
-  color: #007bff;
+  color: white;
   cursor: pointer;
-  margin-bottom: 20px;
-  font-size: 16px;
+  margin-bottom: 30px;
+  font-size: 1.1em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.login-form {
+.login-card {
   background: white;
-  padding: 30px;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+  max-width: 450px;
+  width: 100%;
 }
 
-.form-group {
+.login-card h2 {
+  text-align: center;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.login-card > p {
+  text-align: center;
+  color: #666;
+  margin-bottom: 30px;
+}
+
+.input-group {
   margin-bottom: 20px;
 }
 
-.form-group label {
+.input-group label {
   display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
+  margin-bottom: 8px;
+  color: #333;
+  font-weight: 500;
 }
 
-.form-group input {
+.input-group input {
   width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 16px;
+  padding: 12px 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1em;
+  transition: border-color 0.3s ease;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: #667eea;
 }
 
 .login-btn {
   width: 100%;
   padding: 12px;
-  background: #007bff;
+  background: #667eea;
   color: white;
   border: none;
-  border-radius: 5px;
-  font-size: 16px;
+  border-radius: 8px;
+  font-size: 1.1em;
   cursor: pointer;
+  transition: background 0.3s ease;
+  margin-top: 10px;
+}
+
+.login-btn:hover:not(:disabled) {
+  background: #5a6fd8;
 }
 
 .login-btn:disabled {
-  background: #6c757d;
+  background: #ccc;
   cursor: not-allowed;
 }
 
-.error-message {
-  background: #f8d7da;
-  color: #721c24;
-  padding: 10px;
-  border-radius: 5px;
-  margin-bottom: 15px;
-}
-
-.test-access {
+.test-info {
   margin-top: 30px;
   padding-top: 20px;
-  border-top: 1px solid #ddd;
-}
-
-.test-credentials-btn {
-  width: 100%;
-  padding: 10px;
-  background: #28a745;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  margin: 10px 0;
-}
-
-.test-credentials {
-  background: #f8f9fa;
-  padding: 15px;
-  border-radius: 5px;
+  border-top: 1px solid #e0e0e0;
+  text-align: center;
+  color: #666;
   font-size: 0.9em;
 }
-/* Стили для админ-панели */
+
+/* Админ панель */
 .admin-panel {
-  padding: 20px;
+  min-height: 100vh;
+  background: #f5f5f5;
 }
 
 .admin-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
-  padding-bottom: 20px;
-  border-bottom: 2px solid #ddd;
+  margin-bottom: 40px;
+  padding: 30px 0;
 }
 
 .admin-header h1 {
   color: #333;
-  margin: 0;
+  margin-bottom: 5px;
 }
 
-.admin-content {
+.admin-header p {
+  color: #666;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.stat-card {
   background: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  padding: 20px;
+  padding: 25px;
+  border-radius: 15px;
+  text-align: center;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
 
-/* Убедимся, что ResultsView отображается */
-.results-view {
-  min-height: 400px;
+.stat-value {
+  font-size: 2.5em;
+  font-weight: bold;
+  color: #667eea;
+  margin-bottom: 5px;
+}
+
+.stat-label {
+  color: #666;
+  font-size: 1.1em;
+}
+
+.results-section {
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.results-section h2 {
+  margin-bottom: 25px;
+  color: #333;
+}
+
+.results-table {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  background: #f8f9fa;
+  padding: 15px;
+  text-align: left;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 2px solid #dee2e6;
+}
+
+td {
+  padding: 15px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-info strong {
+  color: #333;
+}
+
+.user-info span {
+  color: #666;
+  font-size: 0.9em;
+}
+
+.score-badge {
+  background: #e8f5e8;
+  color: #2e7d32;
+  padding: 6px 12px;
+  border-radius: 15px;
+  font-weight: bold;
+  display: inline-block;
+}
+
+.loading {
+  text-align: center;
+  padding: 50px;
+  font-size: 1.2em;
+  color: #666;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .container {
+    padding: 15px;
+  }
+  
+  .role-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .tests-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .admin-header {
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .login-card {
+    padding: 25px;
+  }
 }

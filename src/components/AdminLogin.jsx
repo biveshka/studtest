@@ -1,113 +1,68 @@
+// src/components/AdminLogin.jsx
 import React, { useState } from 'react';
 
-// Мок-данные прямо в компоненте
-const mockAdmin = {
-  email: "admin@test.ru",
-  password: "admin123"
-};
-
-const AdminLogin = ({ onBack, onLogin }) => {
+const AdminLogin = ({ onBack, onLogin, loading }) => {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onLogin(formData.email, formData.password);
+  };
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
-    setError('');
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    // Имитация проверки администратора
-    setTimeout(() => {
-      if (formData.email === mockAdmin.email && formData.password === mockAdmin.password) {
-        onLogin(true);
-      } else {
-        setError('Неверный email или пароль');
-      }
-      setLoading(false);
-    }, 1000);
-  };
-
-  const useTestCredentials = () => {
-    setFormData({
-      email: mockAdmin.email,
-      password: mockAdmin.password
-    });
   };
 
   return (
     <div className="admin-login">
-      <button className="back-btn" onClick={onBack}>
-        ← Назад к выбору роли
-      </button>
+      <div className="container">
+        <button className="back-btn" onClick={onBack}>
+          ← Назад к выбору роли
+        </button>
 
-      <div className="login-form">
-        <h2>Вход для администратора</h2>
-        <p>Введите данные для доступа к панели управления</p>
+        <div className="login-card">
+          <h2>Вход для администратора</h2>
+          <p>Введите данные для доступа к панели управления</p>
 
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Email</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="admin@test.ru"
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Пароль</label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Введите пароль"
-              required
-            />
-          </div>
-
-          {error && (
-            <div className="error-message">
-              {error}
+          <form onSubmit={handleSubmit}>
+            <div className="input-group">
+              <label>Email</label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="admin@example.com"
+                required
+              />
             </div>
-          )}
 
-          <button 
-            type="submit" 
-            className="login-btn"
-            disabled={loading}
-          >
-            {loading ? 'Вход...' : 'Войти'}
-          </button>
-        </form>
+            <div className="input-group">
+              <label>Пароль</label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Введите пароль"
+                required
+              />
+            </div>
 
-        <div className="test-access">
-          <h4>Тестовый доступ:</h4>
-          <p>Используйте данные администратора из базы данных</p>
-          <button 
-            type="button" 
-            className="test-credentials-btn"
-            onClick={useTestCredentials}
-          >
-            Использовать тестовые данные
-          </button>
-          <div className="test-credentials">
-            <p><strong>Email:</strong> admin@test.ru</p>
-            <p><strong>Пароль:</strong> admin123</p>
+            <button type="submit" className="login-btn" disabled={loading}>
+              {loading ? 'Вход...' : 'Войти'}
+            </button>
+          </form>
+
+          <div className="test-info">
+            <p>Тестовый доступ:</p>
+            <p>Используйте данные администратора из базы данных</p>
           </div>
         </div>
       </div>
