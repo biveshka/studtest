@@ -1,53 +1,51 @@
 import React, { useState, useEffect } from 'react';
 
-// Мок-данные прямо в компоненте
-const mockTests = [
-  {
-    id: 1,
-    title: "Основы JavaScript",
-    description: "Тест по основам программирования на JavaScript",
-    tags: ["programming", "javascript", "beginner"],
-    questionsCount: 10,
-    timeLimit: 30,
-    difficulty: "beginner",
-    available: true
-  },
-  {
-    id: 2,
-    title: "React.js основы",
-    description: "Тестирование знаний по React.js и компонентам",
-    tags: ["react", "frontend", "javascript"],
-    questionsCount: 15,
-    timeLimit: 45,
-    difficulty: "intermediate",
-    available: true
-  },
-  {
-    id: 3,
-    title: "Базы данных SQL",
-    description: "Тест по основам реляционных баз данных и SQL",
-    tags: ["database", "sql", "backend"],
-    questionsCount: 20,
-    timeLimit: 60,
-    difficulty: "intermediate",
-    available: true
-  }
-];
-
-const TestSelection = ({ onRoleChange }) => {
+const TestSelection = ({ onRoleChange, onStartTest }) => {
   const [tests, setTests] = useState([]);
   const [filteredTests, setFilteredTests] = useState([]);
   const [selectedTag, setSelectedTag] = useState('all');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Имитация загрузки данных
     setTimeout(() => {
       setTests(mockTests);
       setFilteredTests(mockTests);
       setLoading(false);
     }, 1000);
   }, []);
+
+  const mockTests = [
+    {
+      id: 1,
+      title: "Основы JavaScript",
+      description: "Тест по основам программирования на JavaScript",
+      tags: ["programming", "javascript", "beginner"],
+      questionsCount: 10,
+      timeLimit: 30,
+      difficulty: "beginner",
+      available: true
+    },
+    {
+      id: 2,
+      title: "React.js основы",
+      description: "Тестирование знаний по React.js и компонентам",
+      tags: ["react", "frontend", "javascript"],
+      questionsCount: 15,
+      timeLimit: 45,
+      difficulty: "intermediate",
+      available: true
+    },
+    {
+      id: 3,
+      title: "Базы данных SQL",
+      description: "Тест по основам реляционных баз данных и SQL",
+      tags: ["database", "sql", "backend"],
+      questionsCount: 20,
+      timeLimit: 60,
+      difficulty: "intermediate",
+      available: true
+    }
+  ];
 
   const allTags = ['all', ...new Set(tests.flatMap(test => test.tags))];
 
@@ -57,6 +55,15 @@ const TestSelection = ({ onRoleChange }) => {
       setFilteredTests(tests);
     } else {
       setFilteredTests(tests.filter(test => test.tags.includes(tag)));
+    }
+  };
+
+  const handleStartTest = (testId) => {
+    if (onStartTest) {
+      onStartTest(testId);
+    } else {
+      // Временное сообщение, если обработчик не передан
+      alert(`Запуск теста ID: ${testId}\n\nЭто демо-версия. В реальном приложении здесь будет запуск теста.`);
     }
   };
 
@@ -111,7 +118,10 @@ const TestSelection = ({ onRoleChange }) => {
                   <span key={tag} className="tag">{tag}</span>
                 ))}
               </div>
-              <button className="start-test-btn">
+              <button 
+                className="start-test-btn"
+                onClick={() => handleStartTest(test.id)}
+              >
                 Начать тест
               </button>
             </div>
