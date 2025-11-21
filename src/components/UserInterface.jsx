@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import TestReviews from './TestReviews';
-import { API_BASE_URL } from '../config';
 
 const UserInterface = ({ tests, tags, selectedTag, onTagFilter, onAddReview, onBackToRoleSelection }) => {
   const [currentScreen, setCurrentScreen] = useState('testList');
@@ -10,7 +9,6 @@ const UserInterface = ({ tests, tags, selectedTag, onTagFilter, onAddReview, onB
   const [userName, setUserName] = useState('');
   const [showNameModal, setShowNameModal] = useState(false);
   const [showReviews, setShowReviews] = useState(false);
-  const [testStartTime, setTestStartTime] = useState(null);
 
   const resetTest = () => {
     setCurrentTest(null);
@@ -20,13 +18,11 @@ const UserInterface = ({ tests, tags, selectedTag, onTagFilter, onAddReview, onB
     setShowNameModal(false);
     setCurrentScreen('testList');
     setShowReviews(false);
-    setTestStartTime(null);
   };
 
   const startTest = (test) => {
     setCurrentTest(test);
     setShowNameModal(true);
-    setTestStartTime(Date.now());
   };
 
   const confirmNameAndStart = () => {
@@ -61,45 +57,19 @@ const UserInterface = ({ tests, tags, selectedTag, onTagFilter, onAddReview, onB
     let score = 0;
     currentTest.questions.forEach(question => {
       const userAnswer = userAnswers[question.id];
-      if (userAnswer !== undefined && parseInt(question.correct_answer) === userAnswer) {
-        score += question.points || 1;
+      if (userAnswer !== undefined && question.correct_answer === userAnswer) {
+        score += question.points;
       }
     });
     return score;
   };
 
-  const finishTest = async () => {
+  const finishTest = () => {
     const score = calculateScore();
-    const total_questions = currentTest.questions.length;
-    const percentage = Math.round((score / total_questions) * 100);
+    const maxScore = currentTest.max_score;
     
-    try {
-      // Сохраняем результат в базу данных
-      const response = await fetch(`${API_BASE_URL}/results`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          test_id: currentTest.id,
-          user_name: userName,
-          answers: userAnswers,
-          score: score,
-          total_questions: total_questions,
-          percentage: percentage
-        })
-      });
-
-      const result = await response.json();
-      
-      if (result.success) {
-        console.log('✅ Результат сохранен в базе:', result.data);
-      } else {
-        console.error('❌ Ошибка сохранения:', result.error);
-      }
-    } catch (error) {
-      console.error('❌ Ошибка при сохранении результата:', error);
-    }
+    // В реальном приложении здесь будет сохранение в базу
+    console.log('Результат теста:', { userName, score, maxScore, testId: currentTest.id });
     
     setCurrentScreen('results');
   };
@@ -247,7 +217,7 @@ const UserInterface = ({ tests, tags, selectedTag, onTagFilter, onAddReview, onB
                   Вопросов: {test.question_count}
                 </span>
                 <span className="text-sm text-gray-500">
-                  Баллов: {test.total_points}
+                  Баллов: {test.max_score}
                 </span>
               </div>
               
@@ -301,7 +271,7 @@ const UserInterface = ({ tests, tags, selectedTag, onTagFilter, onAddReview, onB
                   Вопрос {currentQuestionIndex + 1} из {currentTest.questions.length}
                 </span>
                 <span className="text-sm font-semibold text-blue-600">
-                  {question.points || 1} баллов
+                  {question.points} баллов
                 </span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
@@ -372,7 +342,7 @@ const UserInterface = ({ tests, tags, selectedTag, onTagFilter, onAddReview, onB
     if (!currentTest) return null;
     
     const score = calculateScore();
-    const maxScore = currentTest.total_points;
+    const maxScore = currentTest.max_score;
     const percentage = Math.round((score / maxScore) * 100);
     const scoreClass = getScoreColor(score, maxScore);
 

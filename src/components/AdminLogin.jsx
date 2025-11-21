@@ -1,65 +1,93 @@
 import React, { useState } from 'react';
 
-const AdminLogin = ({ onBack, onLogin, loading, connectionError }) => {
-  const [formData, setFormData] = useState({ email: '', password: '' });
+const AdminLogin = ({ onLogin, onBack }) => {
+  const [credentials, setCredentials] = useState({
+    email: '',
+    password: ''
+  });
+  const [error, setError] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onLogin(formData.email, formData.password);
-  };
-
-  const useDemoCredentials = () => {
-    setFormData({
-      email: 'admin@test.ru',
-      password: 'admin123'
-    });
+    
+    if (credentials.email === 'admin@test.ru' && credentials.password === 'admin123') {
+      onLogin({
+        id: 1,
+        email: 'admin@test.ru',
+        full_name: 'Администратор Системы',
+        role: 'admin'
+      });
+    } else {
+      setError('Неверный email или пароль');
+    }
   };
 
   return (
-    <div className="admin-login">
-      <div className="container">
-        <button className="back-btn" onClick={onBack}>← Назад к выбору роли</button>
-        
-        <div className="login-card">
-          <h2>Вход для администратора</h2>
-          <p>Введите данные для доступа к панели управления</p>
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-teal-100 flex items-center justify-center py-8">
+      <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
+        <button
+          onClick={onBack}
+          className="flex items-center text-gray-600 hover:text-gray-800 mb-6"
+        >
+          ← Назад к выбору роли
+        </button>
 
-          {connectionError && (
-            <div className="demo-notice">
-              <strong>Демо-режим:</strong> Используйте тестовые данные ниже
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+            Вход для администратора
+          </h1>
+          <p className="text-gray-600">
+            Введите данные для доступа к панели управления
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Email
+            </label>
+            <input
+              type="email"
+              value={credentials.email}
+              onChange={(e) => setCredentials(prev => ({...prev, email: e.target.value}))}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              placeholder="admin@test.ru"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Пароль
+            </label>
+            <input
+              type="password"
+              value={credentials.password}
+              onChange={(e) => setCredentials(prev => ({...prev, password: e.target.value}))}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              placeholder="Введите пароль"
+              required
+            />
+          </div>
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+              <p className="text-red-600 text-sm">{error}</p>
             </div>
           )}
 
-          <form onSubmit={handleSubmit}>
-            <div className="input-group">
-              <label>Email</label>
-              <input 
-                type="email" 
-                name="email"
-                value={formData.email} 
-                onChange={(e) => setFormData({...formData, email: e.target.value})} 
-                required 
-                placeholder="admin@test.ru"
-              />
-            </div>
-            <div className="input-group">
-              <label>Пароль</label>
-              <input 
-                type="password" 
-                name="password"
-                value={formData.password} 
-                onChange={(e) => setFormData({...formData, password: e.target.value})} 
-                required 
-                placeholder="admin123"
-              />
-            </div>
+          <button
+            type="submit"
+            className="w-full bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 transition-colors duration-200 font-semibold"
+          >
+            Войти
+          </button>
+        </form>
 
-            <button type="submit" className="login-btn" disabled={loading}>
-              {loading ? 'Вход...' : 'Войти'}
-            </button>
-          </form>
-
-          
+        <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+          <h3 className="font-semibold text-gray-700 mb-2">Демо-доступ:</h3>
+          <p className="text-sm text-gray-600">Email: <span className="font-mono">admin@test.ru</span></p>
+          <p className="text-sm text-gray-600">Пароль: <span className="font-mono">admin123</span></p>
         </div>
       </div>
     </div>

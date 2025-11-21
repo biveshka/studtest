@@ -1,347 +1,210 @@
-import React, { useState, useEffect } from 'react';
-import { supabase } from '../supabase';
+import React, { useState } from 'react';
+import TestEditor from './TestEditor';
 
-const AdminPanel = ({ user, tests, onRoleChange, onCreateTest, onRefreshTests }) => {
-  const [results, setResults] = useState([]);
-  const [stats, setStats] = useState({});
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [newTest, setNewTest] = useState({
-    title: '',
-    description: '',
-    time_limit: 30,
-    questions_count: 10,
-    difficulty: 'beginner',
-    tags: []
-  });
+const AdminPanel = ({ tests, tags, onAddTest, onUpdateTest, onDeleteTest, onLogout, user }) => {
+  const [currentView, setCurrentView] = useState('dashboard');
+  const [editingTest, setEditingTest] = useState(null);
 
-  useEffect(() => {
-    fetchResults();
-    fetchStats();
-  }, []);
+  const handleCreateTest = () => {
+    setEditingTest(null);
+    setCurrentView('create');
+  };
 
-  const fetchResults = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('test_results')
-        .select(`
-          *,
-          tests (title)
-        `)
-        .order('created_at', { ascending: false })
-        .limit(50);
+  const handleEditTest = (test) => {
+    setEditingTest(test);
+    setCurrentView('edit');
+  };
 
-      if (error) throw error;
-      setResults(data || []);
-    } catch (error) {
-      console.error('Error fetching results:', error);
+  const handleSaveTest = (testData) => {
+    if (editingTest) {
+      onUpdateTest({ ...editingTest, ...testData });
+    } else {
+      onAddTest(testData);
+    }
+    setCurrentView('dashboard');
+  };
+
+  const handleDeleteTest = (testId) => {
+    if (window.confirm('Вы уверены, что хотите удалить этот тест?')) {
+      onDeleteTest(testId);
     }
   };
 
-  const fetchStats = async () => {
-    try {
-      // Общая статистика
-      const { count: totalUsers } = await supabase
-        .from('test_results')
-        .select('user_name', { count: 'exact', head: true });
+  const renderDashboard = () => (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-gray-800">Панель управления</h2>
+        <button
+          onClick={handleCreateTest}
+          className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          + Создать тест
+        </button>
+      </div>
 
-      const { count: totalTests } = await supabase
-        .from('tests')
-        .select('*', { count: 'exact', head: true });
-
-      const { data: resultsData } = await supabase
-        .from('test_results')
-        .select('score');
-
-      const avgScore = resultsData && resultsData.length > 0 
-        ? resultsData.reduce((acc, curr) => acc + curr.score, 0) / resultsData.length 
-        : 0;
-
-      setStats({
-        totalUsers: totalUsers || 0,
-        totalTests: totalTests || 0,
-        avgScore: avgScore.toFixed(1),
-        totalAttempts: resultsData?.length || 0
-      });
-
-    } catch (error) {
-      console.error('Error fetching stats:', error);
-    }
-  };
-
-  const handleCreateTest = async (e) => {
-    e.preventDefault();
-    
-    const testData = {
-      ...newTest,
-      is_active: true,
-      tags: Array.isArray(newTest.tags) ? newTest.tags : newTest.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
-    };
-
-    const createdTest = await onCreateTest(testData);
-    
-    if (createdTest) {
-      setShowCreateForm(false);
-      setNewTest({
-        title: '',
-        description: '',
-        time_limit: 30,
-        questions_count: 10,
-        difficulty: 'beginner',
-        tags: []
-      });
-    }
-  };
-
-  const deleteTest = async (testId) => {
-    if (!window.confirm('Вы уверены, что хотите удалить этот тест?')) return;
-
-    try {
-      const { error } = await supabase
-        .from('tests')
-        .update({ is_active: false })
-        .eq('id', testId);
-
-      if (error) throw error;
-      
-      onRefreshTests();
-      alert('Тест удален!');
-    } catch (error) {
-      console.error('Error deleting test:', error);
-      alert('Ошибка удаления теста');
-    }
-  };
-
-  const exportResults = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('test_results')
-        .select(`
-          *,
-          tests (title)
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Создаем CSV
-      const headers = ['Пользователь', 'Тест', 'Результат (%)', 'Время (мин)', 'Правильные ответы', 'Всего вопросов', 'Дата'];
-      const csvData = data.map(result => [
-        result.user_name,
-        result.tests?.title || 'Неизвестно',
-        result.score,
-        result.time_spent,
-        result.correct_answers,
-        result.total_questions,
-        new Date(result.created_at).toLocaleDateString()
-      ]);
-
-      const csvContent = [headers, ...csvData]
-        .map(row => row.map(field => `"${field}"`).join(','))
-        .join('\n');
-
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', `results_${new Date().toISOString().split('T')[0]}.csv`);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      alert('Результаты экспортированы в CSV!');
-    } catch (error) {
-      console.error('Error exporting results:', error);
-      alert('Ошибка экспорта результатов');
-    }
-  };
-
-  return (
-    <div className="admin-panel">
-      <div className="container">
-        <div className="admin-header">
-          <div>
-            <h1>Панель администратора</h1>
-            <p>Добро пожаловать, {user?.name || user?.email}</p>
-          </div>
-          <div className="admin-actions">
-            <button className="btn-primary" onClick={() => setShowCreateForm(true)}>
-              + Создать тест
-            </button>
-            <button className="btn-secondary" onClick={exportResults}>
-              📊 Экспорт результатов
-            </button>
-            <button className="role-change-btn" onClick={onRoleChange}>
-              Сменить роль
-            </button>
-          </div>
+      {/* Статистика */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+        <div className="bg-white p-6 rounded-lg shadow border">
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">Всего тестов</h3>
+          <p className="text-3xl font-bold text-blue-600">{tests.length}</p>
         </div>
-
-        {/* Статистика */}
-        <div className="stats-grid">
-          <div className="stat-card">
-            <div className="stat-value">{stats.totalUsers}</div>
-            <div className="stat-label">Уникальных пользователей</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-value">{stats.totalTests}</div>
-            <div className="stat-label">Активных тестов</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-value">{stats.avgScore}%</div>
-            <div className="stat-label">Средний балл</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-value">{stats.totalAttempts}</div>
-            <div className="stat-label">Всего попыток</div>
-          </div>
+        <div className="bg-white p-6 rounded-lg shadow border">
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">Опубликовано</h3>
+          <p className="text-3xl font-bold text-green-600">
+            {tests.filter(t => t.is_published).length}
+          </p>
         </div>
+        <div className="bg-white p-6 rounded-lg shadow border">
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">Вопросов всего</h3>
+          <p className="text-3xl font-bold text-purple-600">
+            {tests.reduce((sum, test) => sum + test.question_count, 0)}
+          </p>
+        </div>
+        <div className="bg-white p-6 rounded-lg shadow border">
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">Всего тегов</h3>
+          <p className="text-3xl font-bold text-orange-600">
+            {tags.length}
+          </p>
+        </div>
+      </div>
 
-        {/* Создание теста */}
-        {showCreateForm && (
-          <div className="create-test-form">
-            <h3>Создание нового теста</h3>
-            <form onSubmit={handleCreateTest}>
-              <div className="form-row">
-                <input
-                  type="text"
-                  placeholder="Название теста"
-                  value={newTest.title}
-                  onChange={(e) => setNewTest({...newTest, title: e.target.value})}
-                  required
-                />
-                <select
-                  value={newTest.difficulty}
-                  onChange={(e) => setNewTest({...newTest, difficulty: e.target.value})}
-                >
-                  <option value="beginner">Начальный</option>
-                  <option value="intermediate">Средний</option>
-                  <option value="advanced">Продвинутый</option>
-                </select>
-              </div>
-              
-              <textarea
-                placeholder="Описание теста"
-                value={newTest.description}
-                onChange={(e) => setNewTest({...newTest, description: e.target.value})}
-                required
-              />
-              
-              <div className="form-row">
-                <input
-                  type="number"
-                  placeholder="Время (мин)"
-                  value={newTest.time_limit}
-                  onChange={(e) => setNewTest({...newTest, time_limit: parseInt(e.target.value)})}
-                  required
-                  min="1"
-                />
-                <input
-                  type="number"
-                  placeholder="Количество вопросов"
-                  value={newTest.questions_count}
-                  onChange={(e) => setNewTest({...newTest, questions_count: parseInt(e.target.value)})}
-                  required
-                  min="1"
-                />
-              </div>
-              
-              <input
-                type="text"
-                placeholder="Теги (через запятую): programming, javascript, beginner"
-                value={newTest.tags}
-                onChange={(e) => setNewTest({...newTest, tags: e.target.value})}
-              />
-              
-              <div className="form-actions">
-                <button type="submit" className="btn-primary">Создать тест</button>
-                <button type="button" onClick={() => setShowCreateForm(false)}>
-                  Отмена
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
-
-        {/* Список тестов */}
-        <div className="admin-tests-section">
-          <h2>Управление тестами ({tests.length})</h2>
-          <div className="tests-list">
-            {tests.map(test => (
-              <div key={test.id} className="admin-test-card">
-                <div className="test-info">
-                  <h4>{test.title}</h4>
-                  <p>{test.description}</p>
-                  <div className="test-meta">
-                    <span>⏱️ {test.time_limit} мин</span>
-                    <span>📝 {test.questions_count} вопросов</span>
-                    <span className={`difficulty ${test.difficulty}`}>
-                      {test.difficulty}
-                    </span>
-                  </div>
-                  <div className="test-tags">
-                    {test.tags && test.tags.map((tag, index) => (
-                      <span key={index} className="tag">#{tag}</span>
+      {/* Список тестов */}
+      <div className="bg-white rounded-lg shadow border">
+        <div className="p-6 border-b">
+          <h3 className="text-xl font-semibold text-gray-800">Список тестов</h3>
+        </div>
+        <div className="divide-y">
+          {tests.map(test => (
+            <div key={test.id} className="p-6 flex justify-between items-start">
+              <div className="flex-1">
+                <div className="flex items-start justify-between mb-2">
+                  <h4 className="font-semibold text-gray-800 text-lg">{test.title}</h4>
+                  {test.average_rating > 0 && (
+                    <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded text-sm">
+                      <span className="text-yellow-600">★</span>
+                      <span className="font-medium text-yellow-700">
+                        {test.average_rating.toFixed(1)}
+                      </span>
+                      <span className="text-yellow-600">({test.review_count})</span>
+                    </div>
+                  )}
+                </div>
+                
+                <p className="text-gray-600 mb-3">{test.description}</p>
+                
+                {/* Теги теста */}
+                {test.tags && test.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mb-3">
+                    {test.tags.map(tag => (
+                      <span
+                        key={tag.id}
+                        className="px-2 py-1 rounded-full text-xs font-medium text-white"
+                        style={{ backgroundColor: tag.color }}
+                      >
+                        {tag.name}
+                      </span>
                     ))}
                   </div>
-                </div>
-                <div className="test-actions">
-                  <button className="btn-edit">Редактировать</button>
-                  <button 
-                    className="btn-delete"
-                    onClick={() => deleteTest(test.id)}
-                  >
-                    Удалить
-                  </button>
+                )}
+                
+                <div className="flex gap-4 text-sm text-gray-500">
+                  <span>Вопросов: {test.question_count}</span>
+                  <span>Баллов: {test.max_score}</span>
+                  <span className={`px-2 py-1 rounded-full text-xs ${
+                    test.is_published 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {test.is_published ? 'Опубликован' : 'Черновик'}
+                  </span>
                 </div>
               </div>
+              <div className="flex gap-2 ml-4">
+                <button
+                  onClick={() => handleEditTest(test)}
+                  className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition-colors"
+                >
+                  Редактировать
+                </button>
+                <button
+                  onClick={() => handleDeleteTest(test.id)}
+                  className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
+                >
+                  Удалить
+                </button>
+              </div>
+            </div>
+          ))}
+          {tests.length === 0 && (
+            <div className="p-8 text-center text-gray-500">
+              <div className="text-4xl mb-3">📝</div>
+              <p className="text-lg">Тесты еще не созданы</p>
+              <p className="text-sm mt-1">Создайте первый тест, нажав кнопку выше</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Список тегов */}
+      <div className="bg-white rounded-lg shadow border">
+        <div className="p-6 border-b">
+          <h3 className="text-xl font-semibold text-gray-800">Доступные теги</h3>
+        </div>
+        <div className="p-6">
+          <div className="flex flex-wrap gap-2">
+            {tags.map(tag => (
+              <span
+                key={tag.id}
+                className="px-3 py-2 rounded-full text-sm font-medium text-white"
+                style={{ backgroundColor: tag.color }}
+              >
+                {tag.name}
+              </span>
             ))}
           </div>
         </div>
+      </div>
+    </div>
+  );
 
-        {/* Результаты тестов */}
-        <div className="results-section">
-          <div className="section-header">
-            <h2>Последние результаты</h2>
-            <button onClick={fetchResults} className="btn-refresh">
-              🔄 Обновить
-            </button>
-          </div>
-          <div className="results-table">
-            <table>
-              <thead>
-                <tr>
-                  <th>Пользователь</th>
-                  <th>Тест</th>
-                  <th>Результат</th>
-                  <th>Время</th>
-                  <th>Дата</th>
-                </tr>
-              </thead>
-              <tbody>
-                {results.map(result => (
-                  <tr key={result.id}>
-                    <td>{result.user_name}</td>
-                    <td>{result.tests?.title}</td>
-                    <td>
-                      <div className={`score-badge ${result.score >= 80 ? 'excellent' : result.score >= 60 ? 'good' : 'poor'}`}>
-                        {result.score}%
-                      </div>
-                    </td>
-                    <td>{result.time_spent} мин.</td>
-                    <td>{new Date(result.created_at).toLocaleDateString('ru-RU')}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {results.length === 0 && (
-              <div className="no-data">
-                <p>Нет данных о результатах</p>
-              </div>
-            )}
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Административная панель</h1>
+              <p className="text-gray-600">Добро пожаловать, {user?.full_name}</p>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                Администратор
+              </span>
+              <button
+                onClick={onLogout}
+                className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+              >
+                Выйти
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {currentView === 'dashboard' && renderDashboard()}
+        {(currentView === 'create' || currentView === 'edit') && (
+          <TestEditor
+            test={editingTest}
+            tags={tags}
+            onSave={handleSaveTest}
+            onCancel={() => setCurrentView('dashboard')}
+            mode={currentView === 'create' ? 'create' : 'edit'}
+          />
+        )}
+      </main>
     </div>
   );
 };
