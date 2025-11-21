@@ -300,7 +300,7 @@ function App() {
         </div>
 
         <div className="mt-6 text-center text-gray-500 text-sm">
-          Версия 2.0 с тегами и отзывами
+          
         </div>
       </div>
     </div>

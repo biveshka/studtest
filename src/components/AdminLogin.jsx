@@ -84,11 +84,7 @@ const AdminLogin = ({ onLogin, onBack }) => {
           </button>
         </form>
 
-        <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-          <h3 className="font-semibold text-gray-700 mb-2">Демо-доступ:</h3>
-          <p className="text-sm text-gray-600">Email: <span className="font-mono">admin@test.ru</span></p>
-          <p className="text-sm text-gray-600">Пароль: <span className="font-mono">admin123</span></p>
-        </div>
+        
       </div>
     </div>
   );
