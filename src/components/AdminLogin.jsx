@@ -14,7 +14,7 @@ const AdminLogin = ({ onBack, onLogin }) => {
       ...formData,
       [e.target.name]: e.target.value
     });
-    setError('');
+    setError(''); // Очищаем ошибку при изменении поля
   };
 
   const handleSubmit = async (e) => {
@@ -22,15 +22,15 @@ const AdminLogin = ({ onBack, onLogin }) => {
     setLoading(true);
     setError('');
 
-    // Имитация проверки администратора
+    // Имитация проверки администратора с задержкой
     setTimeout(() => {
       if (formData.email === mockAdmin.email && formData.password === mockAdmin.password) {
-        onLogin(true);
+        onLogin(true); // Успешный вход
       } else {
         setError('Неверный email или пароль');
       }
       setLoading(false);
-    }, 1500);
+    }, 1000);
   };
 
   const useTestCredentials = () => {
@@ -38,6 +38,7 @@ const AdminLogin = ({ onBack, onLogin }) => {
       email: mockAdmin.email,
       password: mockAdmin.password
     });
+    setError(''); // Очищаем ошибку при использовании тестовых данных
   };
 
   return (
@@ -75,6 +76,7 @@ const AdminLogin = ({ onBack, onLogin }) => {
             />
           </div>
 
+          {/* Показываем ошибку только если она есть */}
           {error && (
             <div className="error-message">
               {error}

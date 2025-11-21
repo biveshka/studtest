@@ -19,11 +19,14 @@ function App() {
   };
 
   const handleAdminLogin = (success) => {
-    if (success) {
-      setUserRole('admin');
-      setCurrentView('admin-panel');
-    }
-  };
+  if (success) {
+    setUserRole('admin');
+    setCurrentView('admin-panel');
+  } else {
+    // Ошибка уже обработана в AdminLogin компоненте
+    console.log('Ошибка входа администратора');
+  }
+};
 
   const handleBackToRoleSelection = () => {
     setCurrentView('role-selection');
