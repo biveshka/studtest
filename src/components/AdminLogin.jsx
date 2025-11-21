@@ -1,24 +1,40 @@
 import React, { useState } from 'react';
 
+const API_BASE_URL = 'http://localhost:5000/api';
+
 const AdminLogin = ({ onLogin, onBack }) => {
   const [credentials, setCredentials] = useState({
     email: '',
     password: ''
   });
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (credentials.email === 'admin@test.ru' && credentials.password === 'admin123') {
-      onLogin({
-        id: 1,
-        email: 'admin@test.ru',
-        full_name: 'Администратор Системы',
-        role: 'admin'
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(credentials)
       });
-    } else {
-      setError('Неверный email или пароль');
+
+      const result = await response.json();
+
+      if (result.success) {
+        onLogin(result.user);
+      } else {
+        setError(result.error || 'Неверные учетные данные');
+      }
+    } catch (error) {
+      setError('Ошибка соединения с сервером');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -51,8 +67,9 @@ const AdminLogin = ({ onLogin, onBack }) => {
               value={credentials.email}
               onChange={(e) => setCredentials(prev => ({...prev, email: e.target.value}))}
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-              placeholder="admin@test.ru"
+              placeholder="admin@example.com"
               required
+              disabled={loading}
             />
           </div>
 
@@ -67,6 +84,7 @@ const AdminLogin = ({ onLogin, onBack }) => {
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
               placeholder="Введите пароль"
               required
+              disabled={loading}
             />
           </div>
 
@@ -78,13 +96,19 @@ const AdminLogin = ({ onLogin, onBack }) => {
 
           <button
             type="submit"
-            className="w-full bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 transition-colors duration-200 font-semibold"
+            disabled={loading}
+            className="w-full bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 transition-colors duration-200 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Войти
+            {loading ? 'Вход...' : 'Войти'}
           </button>
         </form>
 
-        
+        <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+          <h3 className="font-semibold text-gray-700 mb-2">Тестовый доступ:</h3>
+          <p className="text-sm text-gray-600">
+            Используйте данные администратора из базы данных
+          </p>
+        </div>
       </div>
     </div>
   );

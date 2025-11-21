@@ -3,189 +3,42 @@ import AdminPanel from './components/AdminPanel';
 import AdminLogin from './components/AdminLogin';
 import UserInterface from './components/UserInterface';
 
-// Демо данные тестов с тегами и отзывами
-const DEMO_TESTS = [
-  {
-    id: 1,
-    title: "Тест по JavaScript",
-    description: "Проверьте свои знания JavaScript",
-    question_count: 3,
-    max_score: 6,
-    is_published: true,
-    created_by: null,
-    average_rating: 4.5,
-    review_count: 12,
-    tags: [
-      { id: 1, name: 'JavaScript', color: '#F7DF1E' },
-      { id: 3, name: 'React', color: '#61DAFB' }
-    ],
-    reviews: [
-      {
-        id: 1,
-        user_name: "Иван Петров",
-        rating: 5,
-        comment: "Отличный тест! Очень полезные вопросы.",
-        created_at: "2024-01-15T10:30:00Z",
-        is_approved: true
-      },
-      {
-        id: 2,
-        user_name: "Мария Сидорова",
-        rating: 4,
-        comment: "Хороший тест, но можно добавить больше практических заданий.",
-        created_at: "2024-01-14T15:20:00Z",
-        is_approved: true
-      }
-    ],
-    questions: [
-      {
-        id: 101,
-        question_text: "Что такое closure в JavaScript?",
-        options: ["Функция внутри функции", "Область видимости функции", "Замыкание", "Все варианты"],
-        correct_answer: 2,
-        points: 2
-      },
-      {
-        id: 102,
-        question_text: "Какой метод используется для создания элемента React?",
-        options: ["React.createElement()", "React.newElement()", "React.makeElement()", "React.element()"],
-        correct_answer: 0,
-        points: 2
-      },
-      {
-        id: 103,
-        question_text: "Что возвращает функция useState в React?",
-        options: ["Только значение", "Только функцию обновления", "Массив [значение, функция]", "Объект с значением и функцией"],
-        correct_answer: 2,
-        points: 2
-      }
-    ]
-  },
-  {
-    id: 2,
-    title: "Тест по HTML/CSS",
-    description: "Основы веб-разработки",
-    question_count: 2,
-    max_score: 4,
-    is_published: true,
-    created_by: null,
-    average_rating: 4.2,
-    review_count: 8,
-    tags: [
-      { id: 2, name: 'HTML/CSS', color: '#E34F26' }
-    ],
-    reviews: [
-      {
-        id: 3,
-        user_name: "Алексей Козлов",
-        rating: 5,
-        comment: "Понятные вопросы, хорошая структура теста.",
-        created_at: "2024-01-13T09:15:00Z",
-        is_approved: true
-      }
-    ],
-    questions: [
-      {
-        id: 201,
-        question_text: "Что означает CSS?",
-        options: ["Computer Style Sheets", "Creative Style System", "Cascading Style Sheets", "Colorful Style Sheets"],
-        correct_answer: 2,
-        points: 2
-      },
-      {
-        id: 202,
-        question_text: "Какой тег используется для создания ссылки?",
-        options: ["<link>", "<a>", "<href>", "<url>"],
-        correct_answer: 1,
-        points: 2
-      }
-    ]
-  },
-  {
-    id: 3,
-    title: "Тест по Python",
-    description: "Основы программирования на Python",
-    question_count: 3,
-    max_score: 6,
-    is_published: true,
-    created_by: null,
-    average_rating: 4.7,
-    review_count: 15,
-    tags: [
-      { id: 4, name: 'Python', color: '#3776AB' },
-      { id: 5, name: 'Алгоритмы', color: '#FF6B6B' }
-    ],
-    reviews: [
-      {
-        id: 4,
-        user_name: "Дмитрий Новиков",
-        rating: 5,
-        comment: "Отличный тест для начинающих изучать Python!",
-        created_at: "2024-01-12T14:45:00Z",
-        is_approved: true
-      }
-    ],
-    questions: [
-      {
-        id: 301,
-        question_text: "Как создать список в Python?",
-        options: ["list = ()", "list = {}", "list = []", "list = <>"],
-        correct_answer: 2,
-        points: 2
-      },
-      {
-        id: 302,
-        question_text: "Какой оператор используется для возведения в степень?",
-        options: ["^", "**", "^^", "pow"],
-        correct_answer: 1,
-        points: 2
-      },
-      {
-        id: 303,
-        question_text: "Как объявить функцию в Python?",
-        options: ["function myFunc()", "def myFunc()", "func myFunc()", "define myFunc()"],
-        correct_answer: 1,
-        points: 2
-      }
-    ]
-  }
-];
-
-// Демо теги
-const DEMO_TAGS = [
-  { id: 1, name: 'JavaScript', color: '#F7DF1E' },
-  { id: 2, name: 'HTML/CSS', color: '#E34F26' },
-  { id: 3, name: 'React', color: '#61DAFB' },
-  { id: 4, name: 'Python', color: '#3776AB' },
-  { id: 5, name: 'Базы данных', color: '#336791' },
-  { id: 6, name: 'Алгоритмы', color: '#FF6B6B' }
-];
+const API_BASE_URL = 'http://localhost:5000/api';
 
 function App() {
   const [currentView, setCurrentView] = useState('roleSelection');
-  const [tests, setTests] = useState(DEMO_TESTS);
-  const [tags] = useState(DEMO_TAGS);
+  const [tests, setTests] = useState([]);
+  const [tags, setTags] = useState([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
-  const [filteredTests, setFilteredTests] = useState(DEMO_TESTS);
+  const [filteredTests, setFilteredTests] = useState([]);
   const [selectedTag, setSelectedTag] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Загрузка тестов из localStorage
+  // Загрузка данных при запуске
   useEffect(() => {
-    const savedTests = localStorage.getItem('quizTests');
-    if (savedTests) {
-      setTests(JSON.parse(savedTests));
-    }
+    loadInitialData();
   }, []);
 
-  // Сохранение тестов в localStorage
-  useEffect(() => {
-    localStorage.setItem('quizTests', JSON.stringify(tests));
-    setFilteredTests(selectedTag ? 
-      tests.filter(test => test.tags?.some(tag => tag.id === selectedTag.id)) 
-      : tests
-    );
-  }, [tests, selectedTag]);
+  const loadInitialData = async () => {
+    try {
+      const [testsResponse, tagsResponse] = await Promise.all([
+        fetch(`${API_BASE_URL}/tests`),
+        fetch(`${API_BASE_URL}/tags`)
+      ]);
+
+      const testsData = await testsResponse.json();
+      const tagsData = await tagsResponse.json();
+
+      setTests(testsData);
+      setFilteredTests(testsData);
+      setTags(tagsData);
+    } catch (error) {
+      console.error('Ошибка загрузки данных:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleRoleSelection = (isAdmin) => {
     if (isAdmin) {
@@ -195,7 +48,7 @@ function App() {
     }
   };
 
-  const handleAdminLogin = (userData) => {
+  const handleAdminLogin = async (userData) => {
     setIsAuthenticated(true);
     setUser(userData);
     setCurrentView('admin');
@@ -207,63 +60,131 @@ function App() {
     setCurrentView('roleSelection');
   };
 
-  const handleAddTest = (newTest) => {
-    const testWithId = {
-      ...newTest,
-      id: Date.now(),
-      question_count: newTest.questions.length,
-      max_score: newTest.questions.reduce((sum, q) => sum + q.points, 0),
-      is_published: true,
-      created_by: user?.id || null,
-      average_rating: 0,
-      review_count: 0,
-      reviews: []
-    };
-    setTests(prev => [...prev, testWithId]);
-  };
+  const handleAddTest = async (newTest) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/tests`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...newTest,
+          created_by: user?.id
+        })
+      });
 
-  const handleUpdateTest = (updatedTest) => {
-    setTests(prev => prev.map(test => 
-      test.id === updatedTest.id ? {
-        ...updatedTest,
-        question_count: updatedTest.questions.length,
-        max_score: updatedTest.questions.reduce((sum, q) => sum + q.points, 0)
-      } : test
-    ));
-  };
+      const result = await response.json();
 
-  const handleDeleteTest = (testId) => {
-    setTests(prev => prev.filter(test => test.id !== testId));
-  };
-
-  const handleAddReview = (testId, review) => {
-    setTests(prev => prev.map(test => {
-      if (test.id === testId) {
-        const newReview = {
-          ...review,
-          id: Date.now(),
-          user_name: 'Вы',
-          created_at: new Date().toISOString(),
-          is_approved: true
-        };
-        
-        const updatedReviews = [...(test.reviews || []), newReview];
-        const average_rating = updatedReviews.reduce((sum, r) => sum + r.rating, 0) / updatedReviews.length;
-        
-        return {
-          ...test,
-          reviews: updatedReviews,
-          average_rating: parseFloat(average_rating.toFixed(1)),
-          review_count: updatedReviews.length
-        };
+      if (result.success) {
+        // Перезагружаем тесты
+        await loadInitialData();
+      } else {
+        alert('Ошибка при создании теста: ' + result.error);
       }
-      return test;
-    }));
+    } catch (error) {
+      console.error('Ошибка:', error);
+      alert('Ошибка при создании теста');
+    }
+  };
+
+  const handleUpdateTest = async (updatedTest) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/tests/${updatedTest.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...updatedTest,
+          updated_by: user?.id
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Перезагружаем тесты
+        await loadInitialData();
+      } else {
+        alert('Ошибка при обновлении теста: ' + result.error);
+      }
+    } catch (error) {
+      console.error('Ошибка:', error);
+      alert('Ошибка при обновлении теста');
+    }
+  };
+
+  const handleDeleteTest = async (testId) => {
+    if (!window.confirm('Вы уверены, что хотите удалить этот тест?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/tests/${testId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: user?.id
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Перезагружаем тесты
+        await loadInitialData();
+      } else {
+        alert('Ошибка при удалении теста: ' + result.error);
+      }
+    } catch (error) {
+      console.error('Ошибка:', error);
+      alert('Ошибка при удалении теста');
+    }
+  };
+
+  const handleAddReview = async (testId, review) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/reviews`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          test_id: testId,
+          ...review
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Перезагружаем тесты для обновления рейтинга
+        await loadInitialData();
+      } else {
+        alert('Ошибка при сохранении отзыва: ' + result.error);
+      }
+    } catch (error) {
+      console.error('Ошибка:', error);
+      alert('Ошибка при сохранении отзыва');
+    }
   };
 
   const handleTagFilter = (tag) => {
     setSelectedTag(selectedTag?.id === tag.id ? null : tag);
   };
+
+  // Фильтрация тестов по выбранному тегу
+  useEffect(() => {
+    if (selectedTag) {
+      setFilteredTests(tests.filter(test => 
+        test.tags?.some(t => t.id === selectedTag.id)
+      ));
+    } else {
+      setFilteredTests(tests);
+    }
+  }, [selectedTag, tests]);
 
   const renderRoleSelection = () => (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
@@ -300,18 +221,29 @@ function App() {
         </div>
 
         <div className="mt-6 text-center text-gray-500 text-sm">
-          
+          Версия 2.0 с полной интеграцией Supabase
         </div>
       </div>
     </div>
   );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Загрузка данных...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
       {currentView === 'roleSelection' && renderRoleSelection()}
       {currentView === 'user' && (
         <UserInterface 
-          tests={filteredTests.filter(test => test.is_published)} 
+          tests={filteredTests}
           tags={tags}
           selectedTag={selectedTag}
           onTagFilter={handleTagFilter}
