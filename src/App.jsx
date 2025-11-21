@@ -1,7 +1,8 @@
-// src/App.jsx
+
 import React, { useState, useEffect } from 'react';
-import { supabase } from './config/supabase';
+import { supabase } from './supabase';
 import './App.css';
+
 
 function App() {
   const [currentView, setCurrentView] = useState('role-selection');
