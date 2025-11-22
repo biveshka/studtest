@@ -3,10 +3,8 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  // УБРАТЬ base ИЛИ ОСТАВИТЬ ПУСТЫМ
-  base: '',
+  // УБРАТЬ base полностью!
   build: {
-    outDir: 'dist',
-    emptyOutDir: true
+    outDir: 'dist'
   }
 })
