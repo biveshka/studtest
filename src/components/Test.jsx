@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+import { testsAPI } from '../services/api'; // Используем наш API
 
 const Test = () => {
   const { id } = useParams();
@@ -20,19 +19,19 @@ const Test = () => {
 
   const fetchTest = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/tests/${id}`);
-      if (!response.ok) {
-        throw new Error('Тест не найден');
-      }
-      const data = await response.json();
-      setTest(data);
-    } catch (error) {
-      console.error('Error fetching test:', error);
-      setError('Ошибка загрузки теста');
+      setLoading(true);
+      setError('');
+      const testData = await testsAPI.getTestById(id);
+      setTest(testData);
+    } catch (err) {
+      console.error('Error fetching test:', err);
+      setError('Не удалось загрузить тест. Проверьте подключение к интернету.');
     } finally {
       setLoading(false);
     }
   };
+
+  
 
   const handleAnswerSelect = (questionId, answerIndex) => {
     setAnswers(prev => ({
