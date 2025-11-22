@@ -21,9 +21,8 @@ const UserInterface = ({ tests, tags, selectedTag, onTagFilter, onAddReview, onB
   };
 
   const startTest = (test) => {
-    setCurrentTest(test);
-    setShowNameModal(true);
-  };
+  navigate(`/test/${test.id}`);
+};
 
   const confirmNameAndStart = () => {
     if (!userName.trim()) {
@@ -101,7 +100,7 @@ const UserInterface = ({ tests, tags, selectedTag, onTagFilter, onAddReview, onB
             Отмена
           </button>
           <button 
-            onClick={confirmNameAndStart} 
+            onClick={() => startTest(test)}
             className="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors"
           >
             Начать тест

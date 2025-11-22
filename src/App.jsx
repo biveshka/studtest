@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import AdminPanel from './components/AdminPanel';
 import AdminLogin from './components/AdminLogin';
 import UserInterface from './components/UserInterface';
@@ -165,14 +165,59 @@ const DEMO_TAGS = [
   { id: 6, name: 'Алгоритмы', color: '#FF6B6B' }
 ];
 
+// Компонент выбора роли
+const RoleSelection = ({ onRoleSelect }) => {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-800 mb-4">
+            Система тестирования
+          </h1>
+          <p className="text-gray-600">
+            Выберите режим входа в систему
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          <button
+            onClick={() => onRoleSelect('user')}
+            className="w-full bg-blue-600 text-white py-4 px-6 rounded-xl hover:bg-blue-700 transition-colors duration-200 font-semibold text-lg"
+          >
+            🎓 Студент
+            <div className="text-sm font-normal mt-1 opacity-90">
+              Пройти тестирование
+            </div>
+          </button>
+
+          <button
+            onClick={() => onRoleSelect('admin')}
+            className="w-full bg-green-600 text-white py-4 px-6 rounded-xl hover:bg-green-700 transition-colors duration-200 font-semibold text-lg"
+          >
+            ⚙️ Администратор
+            <div className="text-sm font-normal mt-1 opacity-90">
+              Управление тестами
+            </div>
+          </button>
+        </div>
+
+        <div className="mt-6 text-center text-gray-500 text-sm">
+          Версия 2.0 с тегами и отзывами
+        </div>
+      </div>
+    </div>
+  );
+};
+
 function App() {
-  const [currentView, setCurrentView] = useState('roleSelection');
   const [tests, setTests] = useState(DEMO_TESTS);
   const [tags] = useState(DEMO_TAGS);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
-  const [filteredTests, setFilteredTests] = useState(DEMO_TESTS);
   const [selectedTag, setSelectedTag] = useState(null);
+  
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // Загрузка тестов из localStorage
   useEffect(() => {
@@ -185,30 +230,26 @@ function App() {
   // Сохранение тестов в localStorage
   useEffect(() => {
     localStorage.setItem('quizTests', JSON.stringify(tests));
-    setFilteredTests(selectedTag ? 
-      tests.filter(test => test.tags?.some(tag => tag.id === selectedTag.id)) 
-      : tests
-    );
-  }, [tests, selectedTag]);
+  }, [tests]);
 
-  const handleRoleSelection = (isAdmin) => {
-    if (isAdmin) {
-      setCurrentView('adminLogin');
+  const handleRoleSelection = (role) => {
+    if (role === 'admin') {
+      navigate('/admin/login');
     } else {
-      setCurrentView('user');
+      navigate('/user');
     }
   };
 
   const handleAdminLogin = (userData) => {
     setIsAuthenticated(true);
     setUser(userData);
-    setCurrentView('admin');
+    navigate('/admin');
   };
 
   const handleAdminLogout = () => {
     setIsAuthenticated(false);
     setUser(null);
-    setCurrentView('roleSelection');
+    navigate('/');
   };
 
   const handleAddTest = (newTest) => {
@@ -224,6 +265,7 @@ function App() {
       reviews: []
     };
     setTests(prev => [...prev, testWithId]);
+    navigate('/admin');
   };
 
   const handleUpdateTest = (updatedTest) => {
@@ -234,6 +276,7 @@ function App() {
         max_score: updatedTest.questions.reduce((sum, q) => sum + q.points, 0)
       } : test
     ));
+    navigate('/admin');
   };
 
   const handleDeleteTest = (testId) => {
@@ -269,70 +312,64 @@ function App() {
     setSelectedTag(selectedTag?.id === tag.id ? null : tag);
   };
 
-  const renderRoleSelection = () => (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-4">
-            Система тестирования
-          </h1>
-          <p className="text-gray-600">
-            Выберите режим входа в систему
-          </p>
-        </div>
-
-        <div className="space-y-4">
-          <button
-            onClick={() => handleRoleSelection(false)}
-            className="w-full bg-blue-600 text-white py-4 px-6 rounded-xl hover:bg-blue-700 transition-colors duration-200 font-semibold text-lg"
-          >
-            🎓 Студент
-            <div className="text-sm font-normal mt-1 opacity-90">
-              Пройти тестирование
-            </div>
-          </button>
-
-          <button
-            onClick={() => handleRoleSelection(true)}
-            className="w-full bg-green-600 text-white py-4 px-6 rounded-xl hover:bg-green-700 transition-colors duration-200 font-semibold text-lg"
-          >
-            ⚙️ Администратор
-            <div className="text-sm font-normal mt-1 opacity-90">
-              Управление тестами
-            </div>
-          </button>
-        </div>
-
-        <div className="mt-6 text-center text-gray-500 text-sm">
-          Версия 2.0 с тегами и отзывами
-        </div>
-      </div>
-    </div>
-  );
+  const filteredTests = selectedTag ? 
+    tests.filter(test => test.tags?.some(tag => tag.id === selectedTag.id)) 
+    : tests;
 
   return (
     <div className="App">
       <Routes>
-        {/* Основной маршрут с выбором роли */}
+        {/* Главная страница - выбор роли */}
+        <Route path="/" element={<RoleSelection onRoleSelect={handleRoleSelection} />} />
+        
+        {/* Маршруты для студента */}
         <Route 
-          path="/" 
+          path="/user" 
           element={
-            currentView === 'roleSelection' ? renderRoleSelection() :
-            currentView === 'user' ? (
-              <UserInterface 
-                tests={filteredTests.filter(test => test.is_published)} 
-                tags={tags}
-                selectedTag={selectedTag}
-                onTagFilter={handleTagFilter}
-                onAddReview={handleAddReview}
-                onBackToRoleSelection={() => setCurrentView('roleSelection')}
-              />
-            ) : currentView === 'adminLogin' ? (
-              <AdminLogin 
-                onLogin={handleAdminLogin}
-                onBack={() => setCurrentView('roleSelection')}
-              />
-            ) : currentView === 'admin' ? (
+            <UserInterface 
+              tests={filteredTests.filter(test => test.is_published)} 
+              tags={tags}
+              selectedTag={selectedTag}
+              onTagFilter={handleTagFilter}
+              onAddReview={handleAddReview}
+              onBackToRoleSelection={() => navigate('/')}
+            />
+          } 
+        />
+
+        {/* Маршрут для прохождения теста */}
+        <Route path="/test/:id" element={<Test tests={tests} />} />
+
+        {/* Маршрут для просмотра результатов */}
+        <Route path="/results/:testId" element={<Results />} />
+
+        {/* Маршрут для отзывов */}
+        <Route 
+          path="/reviews/:testId" 
+          element={
+            <TestReviews 
+              test={tests.find(t => t.id === parseInt(location.pathname.split('/').pop()))}
+              onAddReview={handleAddReview}
+              onBack={() => navigate(-1)}
+            />
+          } 
+        />
+
+        {/* Маршруты для администратора */}
+        <Route 
+          path="/admin/login" 
+          element={
+            <AdminLogin 
+              onLogin={handleAdminLogin}
+              onBack={() => navigate('/')}
+            />
+          } 
+        />
+        
+        <Route 
+          path="/admin" 
+          element={
+            isAuthenticated ? (
               <AdminPanel 
                 tests={tests}
                 tags={tags}
@@ -342,34 +379,9 @@ function App() {
                 onLogout={handleAdminLogout}
                 user={user}
               />
-            ) : <Navigate to="/" replace />
-          } 
-        />
-
-        {/* Маршрут для прохождения теста */}
-        <Route 
-          path="/test/:id" 
-          element={<Test />} 
-        />
-
-        {/* Маршрут для просмотра результатов */}
-        <Route 
-          path="/results/:testId" 
-          element={<Results />} 
-        />
-
-        {/* Маршрут для отзывов */}
-        <Route 
-          path="/reviews/:testId" 
-          element={
-            <TestReviews 
-              test={tests.find(t => t.id === parseInt(window.location.pathname.split('/').pop()))}
-              onAddReview={(review) => {
-                const testId = parseInt(window.location.pathname.split('/').pop());
-                handleAddReview(testId, review);
-              }}
-              onBack={() => window.history.back()}
-            />
+            ) : (
+              <Navigate to="/admin/login" replace />
+            )
           } 
         />
 
