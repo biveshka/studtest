@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import AdminPanel from './components/AdminPanel';
 import AdminLogin from './components/AdminLogin';
 import UserInterface from './components/UserInterface';
+import Test from './components/Test';
+import Results from './components/Results';
+import TestReviews from './components/TestReviews';
 
 // Демо данные тестов с тегами и отзывами
 const DEMO_TESTS = [
@@ -307,35 +311,71 @@ function App() {
   );
 
   return (
-    <div>
-      {currentView === 'roleSelection' && renderRoleSelection()}
-      {currentView === 'user' && (
-        <UserInterface 
-          tests={filteredTests.filter(test => test.is_published)} 
-          tags={tags}
-          selectedTag={selectedTag}
-          onTagFilter={handleTagFilter}
-          onAddReview={handleAddReview}
-          onBackToRoleSelection={() => setCurrentView('roleSelection')}
+    <div className="App">
+      <Routes>
+        {/* Основной маршрут с выбором роли */}
+        <Route 
+          path="/" 
+          element={
+            currentView === 'roleSelection' ? renderRoleSelection() :
+            currentView === 'user' ? (
+              <UserInterface 
+                tests={filteredTests.filter(test => test.is_published)} 
+                tags={tags}
+                selectedTag={selectedTag}
+                onTagFilter={handleTagFilter}
+                onAddReview={handleAddReview}
+                onBackToRoleSelection={() => setCurrentView('roleSelection')}
+              />
+            ) : currentView === 'adminLogin' ? (
+              <AdminLogin 
+                onLogin={handleAdminLogin}
+                onBack={() => setCurrentView('roleSelection')}
+              />
+            ) : currentView === 'admin' ? (
+              <AdminPanel 
+                tests={tests}
+                tags={tags}
+                onAddTest={handleAddTest}
+                onUpdateTest={handleUpdateTest}
+                onDeleteTest={handleDeleteTest}
+                onLogout={handleAdminLogout}
+                user={user}
+              />
+            ) : <Navigate to="/" replace />
+          } 
         />
-      )}
-      {currentView === 'adminLogin' && (
-        <AdminLogin 
-          onLogin={handleAdminLogin}
-          onBack={() => setCurrentView('roleSelection')}
+
+        {/* Маршрут для прохождения теста */}
+        <Route 
+          path="/test/:id" 
+          element={<Test />} 
         />
-      )}
-      {currentView === 'admin' && (
-        <AdminPanel 
-          tests={tests}
-          tags={tags}
-          onAddTest={handleAddTest}
-          onUpdateTest={handleUpdateTest}
-          onDeleteTest={handleDeleteTest}
-          onLogout={handleAdminLogout}
-          user={user}
+
+        {/* Маршрут для просмотра результатов */}
+        <Route 
+          path="/results/:testId" 
+          element={<Results />} 
         />
-      )}
+
+        {/* Маршрут для отзывов */}
+        <Route 
+          path="/reviews/:testId" 
+          element={
+            <TestReviews 
+              test={tests.find(t => t.id === parseInt(window.location.pathname.split('/').pop()))}
+              onAddReview={(review) => {
+                const testId = parseInt(window.location.pathname.split('/').pop());
+                handleAddReview(testId, review);
+              }}
+              onBack={() => window.history.back()}
+            />
+          } 
+        />
+
+        {/* Резервный маршрут */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </div>
   );
 }
