@@ -1,41 +1,17 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+const supabaseUrl = 'https://yowmfyygsqlnbprjoxgo.supabase.co'
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlvd21meXlnc3FsbmJwcmpveGdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA3MTk2MTksImV4cCI6MjA3NjI5NTYxOX0.8hcEvo8yviJYxoAj1nDRnS75CorHPq8QR0lkd19NqWc'
 
 export const supabase = createClient(supabaseUrl, supabaseKey)
-
-// Базовый URL для API запросов
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://backend-emcd.onrender.com/api';
-
-// Функция для выполнения HTTP запросов
-const fetchAPI = async (endpoint, options = {}) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-      ...options,
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('API request failed:', error);
-    throw error;
-  }
-};
 
 // API функции для работы с тестами
 export const testsAPI = {
   // Получить все тесты
   async getTests() {
     try {
-      // Сначала пробуем через Supabase
+      console.log('Fetching tests from Supabase...');
+      
       const { data, error } = await supabase
         .from('tests')
         .select(`
@@ -48,26 +24,29 @@ export const testsAPI = {
         .eq('is_published', true)
         .order('created_at', { ascending: false })
       
-      if (!error && data) {
-        // Преобразуем теги в удобный формат
-        return data.map(test => ({
-          ...test,
-          tags: test.test_tags?.map(tt => tt.tags) || []
-        }))
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
       }
       
-      // Если Supabase не сработал, пробуем через бэкенд API
-      return await fetchAPI('/tests');
+      console.log('Tests fetched successfully:', data?.length);
+      
+      // Преобразуем теги в удобный формат
+      return data.map(test => ({
+        ...test,
+        tags: test.test_tags?.map(tt => tt.tags) || []
+      }))
     } catch (error) {
-      console.error('Error fetching tests:', error);
-      throw new Error('Не удалось загрузить тесты');
+      console.error('Error fetching tests from Supabase:', error);
+      throw new Error('Не удалось загрузить тесты из базы данных');
     }
   },
 
   // Получить тест по ID
   async getTestById(id) {
     try {
-      // Сначала пробуем через Supabase
+      console.log('Fetching test by ID:', id);
+      
       const { data, error } = await supabase
         .from('tests')
         .select(`
@@ -80,18 +59,20 @@ export const testsAPI = {
         .eq('id', id)
         .single()
       
-      if (!error && data) {
-        return {
-          ...data,
-          tags: data.test_tags?.map(tt => tt.tags) || []
-        }
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
       }
       
-      // Если Supabase не сработал, пробуем через бэкенд API
-      return await fetchAPI(`/tests/${id}`);
+      console.log('Test fetched successfully:', data?.title);
+      
+      return {
+        ...data,
+        tags: data.test_tags?.map(tt => tt.tags) || []
+      }
     } catch (error) {
-      console.error('Error fetching test:', error);
-      throw new Error('Тест не найден');
+      console.error('Error fetching test from Supabase:', error);
+      throw new Error('Тест не найден в базе данных');
     }
   },
 
@@ -232,6 +213,8 @@ export const resultsAPI = {
   // Сохранить результат теста
   async saveResult(resultData) {
     try {
+      console.log('Saving result to Supabase:', resultData);
+      
       const { data, error } = await supabase
         .from('results')
         .insert([{
@@ -245,19 +228,12 @@ export const resultsAPI = {
         .select()
 
       if (error) throw error
+      
+      console.log('Result saved successfully');
       return data[0]
     } catch (error) {
-      console.error('Error saving result:', error);
-      
-      // Пробуем через бэкенд API
-      try {
-        return await fetchAPI('/results', {
-          method: 'POST',
-          body: JSON.stringify(resultData)
-        });
-      } catch (apiError) {
-        throw new Error('Не удалось сохранить результат');
-      }
+      console.error('Error saving result to Supabase:', error);
+      throw new Error('Не удалось сохранить результат в базу данных');
     }
   },
 
@@ -273,14 +249,8 @@ export const resultsAPI = {
       if (error) throw error
       return data
     } catch (error) {
-      console.error('Error fetching results:', error);
-      
-      // Пробуем через бэкенд API
-      try {
-        return await fetchAPI(`/results/${testId}`);
-      } catch (apiError) {
-        return []; // Возвращаем пустой массив если не удалось загрузить
-      }
+      console.error('Error fetching results from Supabase:', error);
+      return [];
     }
   },
 
@@ -295,7 +265,7 @@ export const resultsAPI = {
       if (error) throw error
       return data
     } catch (error) {
-      console.error('Error fetching all results:', error);
+      console.error('Error fetching all results from Supabase:', error);
       return [];
     }
   }
@@ -305,35 +275,16 @@ export const resultsAPI = {
 export const usersAPI = {
   // Авторизация администратора
   async adminLogin(email, password) {
-    // В реальном приложении здесь должна быть proper аутентификация
-    try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('email', email)
-        .eq('role', 'admin')
-        .single()
-
-      if (error) throw new Error('Пользователь не найден')
-      
-      // В реальном приложении здесь должно быть сравнение хэшей паролей
-      if (password !== 'admin123') {
-        throw new Error('Неверный пароль')
-      }
-
-      return data
-    } catch (error) {
-      // Fallback для демо
-      if (email === 'admin@test.ru' && password === 'admin123') {
-        return {
-          id: 1,
-          email: 'admin@test.ru',
-          full_name: 'Администратор Системы',
-          role: 'admin'
-        };
-      }
-      throw error;
+    // Для демо используем фиксированные данные
+    if (email === 'admin@test.ru' && password === 'admin123') {
+      return {
+        id: 1,
+        email: 'admin@test.ru',
+        full_name: 'Администратор Системы',
+        role: 'admin'
+      };
     }
+    throw new Error('Неверный email или пароль');
   },
 
   // Получить всех пользователей
@@ -347,7 +298,7 @@ export const usersAPI = {
       if (error) throw error
       return data
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error('Error fetching users from Supabase:', error);
       return [];
     }
   }
@@ -367,13 +318,14 @@ export const tagsAPI = {
       if (error) throw error
       return data
     } catch (error) {
-      console.error('Error fetching tags:', error);
+      console.error('Error fetching tags from Supabase:', error);
       // Возвращаем базовые теги если не удалось загрузить
       return [
         { id: '1', name: 'JavaScript', color: '#f7df1e' },
         { id: '2', name: 'React', color: '#61dafb' },
         { id: '3', name: 'HTML/CSS', color: '#e34c26' },
-        { id: '4', name: 'Базы данных', color: '#336791' }
+        { id: '4', name: 'Базы данных', color: '#336791' },
+        { id: '5', name: 'Программирование', color: '#3776ab' }
       ];
     }
   },
@@ -389,7 +341,7 @@ export const tagsAPI = {
       if (error) throw error
       return data[0]
     } catch (error) {
-      console.error('Error creating tag:', error);
+      console.error('Error creating tag in Supabase:', error);
       throw error;
     }
   }

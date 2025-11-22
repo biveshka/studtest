@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { testsAPI } from '../services/api'; // Используем наш API
+import { testsAPI, resultsAPI } from '../services/api';
 
 const Test = () => {
   const { id } = useParams();
@@ -21,17 +21,16 @@ const Test = () => {
     try {
       setLoading(true);
       setError('');
+      console.log('Loading test with ID:', id);
       const testData = await testsAPI.getTestById(id);
       setTest(testData);
     } catch (err) {
       console.error('Error fetching test:', err);
-      setError('Не удалось загрузить тест. Проверьте подключение к интернету.');
+      setError('Не удалось загрузить тест из базы данных.');
     } finally {
       setLoading(false);
     }
   };
-
-  
 
   const handleAnswerSelect = (questionId, answerIndex) => {
     setAnswers(prev => ({
@@ -73,33 +72,24 @@ const Test = () => {
     const maxScore = test.questions.reduce((sum, q) => sum + q.points, 0);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/results`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          test_id: test.id,
-          user_name: userName,
-          score,
-          max_score: maxScore,
-          answers: Object.entries(answers).map(([questionId, answerIndex]) => ({
-            question_id: questionId,
-            answer_index: answerIndex
-          }))
-        })
+      console.log('Saving test results...');
+      await resultsAPI.saveResult({
+        test_id: test.id,
+        user_name: userName,
+        score,
+        max_score: maxScore,
+        answers: Object.entries(answers).map(([questionId, answerIndex]) => ({
+          question_id: questionId,
+          answer_index: answerIndex
+        }))
       });
-
-      if (!response.ok) {
-        throw new Error('Ошибка при сохранении результатов');
-      }
 
       navigate(`/results/${test.id}`, {
         state: { score, maxScore, userName }
       });
     } catch (error) {
       console.error('Error saving results:', error);
-      alert('Ошибка при сохранении результатов');
+      alert('Ошибка при сохранении результатов в базу данных');
     }
   };
 
@@ -107,6 +97,7 @@ const Test = () => {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <span className="ml-4">Загрузка теста...</span>
       </div>
     );
   }
@@ -141,7 +132,7 @@ const Test = () => {
 
   if (showNameModal) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
         <div className="bg-white rounded-lg p-6 max-w-md w-full">
           <h2 className="text-2xl font-bold mb-4">Введите ваше имя</h2>
           <input
