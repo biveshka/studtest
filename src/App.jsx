@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import AdminPanel from './components/AdminPanel';
 import AdminLogin from './components/AdminLogin';
 import UserInterface from './components/UserInterface';
+import Test from './components/Test';
+import Results from './components/Results';
 import { testsAPI, usersAPI } from './services/api';
 
 function App() {
@@ -12,7 +15,6 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Загрузка тестов из Supabase
   useEffect(() => {
     loadTests();
   }, []);
@@ -123,7 +125,7 @@ function App() {
 
         <div className="space-y-4">
           <button
-            onClick={() => handleRoleSelection(false)}
+            onClick={() => window.location.href = '/user'}
             className="w-full bg-blue-600 text-white py-4 px-6 rounded-xl hover:bg-blue-700 transition-colors duration-200 font-semibold text-lg"
             disabled={loading}
           >
@@ -134,7 +136,7 @@ function App() {
           </button>
 
           <button
-            onClick={() => handleRoleSelection(true)}
+            onClick={() => setCurrentView('adminLogin')}
             className="w-full bg-green-600 text-white py-4 px-6 rounded-xl hover:bg-green-700 transition-colors duration-200 font-semibold text-lg"
             disabled={loading}
           >
@@ -164,36 +166,44 @@ function App() {
   }
 
   return (
-    <div>
-      {currentView === 'roleSelection' && renderRoleSelection()}
-      {currentView === 'user' && (
-        <UserInterface 
-          tests={tests} 
-          onBackToRoleSelection={() => setCurrentView('roleSelection')}
-          loading={loading}
-        />
-      )}
-      {currentView === 'adminLogin' && (
-        <AdminLogin 
-          onLogin={handleAdminLogin}
-          onBack={() => setCurrentView('roleSelection')}
-          loading={loading}
-          error={error}
-        />
-      )}
-      {currentView === 'admin' && (
-        <AdminPanel 
-          tests={tests}
-          onAddTest={handleAddTest}
-          onUpdateTest={handleUpdateTest}
-          onDeleteTest={handleDeleteTest}
-          onLogout={handleAdminLogout}
-          user={user}
-          loading={loading}
-          onRefresh={loadTests}
-        />
-      )}
-    </div>
+    <Router>
+      <div>
+        {currentView === 'roleSelection' && renderRoleSelection()}
+        
+        <Routes>
+          <Route path="/user" element={
+            <UserInterface 
+              tests={tests} 
+              onBackToRoleSelection={() => setCurrentView('roleSelection')}
+              loading={loading}
+            />
+          } />
+          <Route path="/test/:id" element={<Test />} />
+          <Route path="/results/:testId" element={<Results />} />
+        </Routes>
+
+        {currentView === 'adminLogin' && (
+          <AdminLogin 
+            onLogin={handleAdminLogin}
+            onBack={() => setCurrentView('roleSelection')}
+            loading={loading}
+            error={error}
+          />
+        )}
+        {currentView === 'admin' && (
+          <AdminPanel 
+            tests={tests}
+            onAddTest={handleAddTest}
+            onUpdateTest={handleUpdateTest}
+            onDeleteTest={handleDeleteTest}
+            onLogout={handleAdminLogout}
+            user={user}
+            loading={loading}
+            onRefresh={loadTests}
+          />
+        )}
+      </div>
+    </Router>
   );
 }
 
