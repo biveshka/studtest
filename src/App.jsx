@@ -168,43 +168,112 @@ const DEMO_TAGS = [
 // Компонент выбора роли
 const RoleSelection = ({ onRoleSelect }) => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-4">
-            Система тестирования
-          </h1>
-          <p className="text-gray-600">
-            Выберите режим входа в систему
-          </p>
-        </div>
-
-        <div className="space-y-4">
-          <button
-            onClick={() => onRoleSelect('user')}
-            className="w-full bg-blue-600 text-white py-4 px-6 rounded-xl hover:bg-blue-700 transition-colors duration-200 font-semibold text-lg"
-          >
-            🎓 Студент
-            <div className="text-sm font-normal mt-1 opacity-90">
-              Пройти тестирование
+    <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '1rem'
+    }}>
+        <div style={{
+            backgroundColor: 'white',
+            borderRadius: '1rem',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            padding: '2rem',
+            maxWidth: '28rem',
+            width: '100%'
+        }}>
+            <div style={{
+                textAlign: 'center',
+                marginBottom: '2rem'
+            }}>
+                <h1 style={{
+                    fontSize: '1.875rem',
+                    fontWeight: 'bold',
+                    color: '#1f2937',
+                    marginBottom: '1rem'
+                }}>
+                    Система тестирования
+                </h1>
+                <p style={{
+                    color: '#6b7280'
+                }}>
+                    Выберите режим входа в систему
+                </p>
             </div>
-          </button>
 
-          <button
-            onClick={() => onRoleSelect('admin')}
-            className="w-full bg-green-600 text-white py-4 px-6 rounded-xl hover:bg-green-700 transition-colors duration-200 font-semibold text-lg"
-          >
-            ⚙️ Администратор
-            <div className="text-sm font-normal mt-1 opacity-90">
-              Управление тестами
+            <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '1rem'
+            }}>
+                <button
+                    onClick={() => onRoleSelect('user')}
+                    style={{
+                        width: '100%',
+                        backgroundColor: '#2563eb',
+                        color: 'white',
+                        padding: '1rem 1.5rem',
+                        borderRadius: '0.75rem',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontWeight: '600',
+                        fontSize: '1.125rem',
+                        transition: 'background-color 0.2s'
+                    }}
+                    onMouseOver={(e) => e.target.style.backgroundColor = '#1d4ed8'}
+                    onMouseOut={(e) => e.target.style.backgroundColor = '#2563eb'}
+                >
+                    🎓 Студент
+                    <div style={{
+                        fontSize: '0.875rem',
+                        fontWeight: '400',
+                        marginTop: '0.25rem',
+                        opacity: '0.9'
+                    }}>
+                        Пройти тестирование
+                    </div>
+                </button>
+
+                <button
+                    onClick={() => onRoleSelect('admin')}
+                    style={{
+                        width: '100%',
+                        backgroundColor: '#16a34a',
+                        color: 'white',
+                        padding: '1rem 1.5rem',
+                        borderRadius: '0.75rem',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontWeight: '600',
+                        fontSize: '1.125rem',
+                        transition: 'background-color 0.2s'
+                    }}
+                    onMouseOver={(e) => e.target.style.backgroundColor = '#15803d'}
+                    onMouseOut={(e) => e.target.style.backgroundColor = '#16a34a'}
+                >
+                    ⚙️ Администратор
+                    <div style={{
+                        fontSize: '0.875rem',
+                        fontWeight: '400',
+                        marginTop: '0.25rem',
+                        opacity: '0.9'
+                    }}>
+                        Управление тестами
+                    </div>
+                </button>
             </div>
-          </button>
-        </div>
 
-        <div className="mt-6 text-center text-gray-500 text-sm">
-          Версия 2.0 с тегами и отзывами
+            <div style={{
+                marginTop: '1.5rem',
+                textAlign: 'center',
+                color: '#6b7280',
+                fontSize: '0.875rem'
+            }}>
+                Версия 2.0 с тегами и отзывами
+            </div>
         </div>
-      </div>
     </div>
   );
 };
