@@ -110,7 +110,77 @@ const UserInterface = ({ tests, tags, selectedTag, onTagFilter, onAddReview, onB
       </div>
     </div>
   );
-
+   const styles = {
+    testSelection: {
+      minHeight: '100vh',
+      background: '#f5f5f5',
+      padding: '20px 0'
+    },
+    container: {
+      maxWidth: '1200px',
+      margin: '0 auto',
+      padding: '20px'
+    },
+    header: {
+      textAlign: 'center',
+      marginBottom: '40px'
+    },
+    headerH1: {
+      color: '#333',
+      marginBottom: '10px',
+      fontSize: '2.2em'
+    },
+    headerP: {
+      color: '#666',
+      fontSize: '1.2em'
+    },
+    roleChangeBtn: {
+      background: '#6c757d',
+      color: 'white',
+      border: 'none',
+      padding: '12px 25px',
+      borderRadius: '8px',
+      cursor: 'pointer',
+      marginBottom: '30px',
+      fontSize: '1em'
+    },
+    filtersSection: {
+      background: 'white',
+      padding: '25px',
+      borderRadius: '15px',
+      marginBottom: '25px',
+      boxShadow: '0 5px 15px rgba(0,0,0,0.1)'
+    },
+    testsGrid: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
+      gap: '25px'
+    },
+    testCard: {
+      background: 'white',
+      padding: '25px',
+      borderRadius: '15px',
+      boxShadow: '0 5px 15px rgba(0,0,0,0.1)',
+      transition: 'transform 0.3s ease'
+    },
+    testHeader: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'start',
+      marginBottom: '15px'
+    },
+    startTestBtn: {
+      width: '100%',
+      padding: '12px',
+      background: '#667eea',
+      color: 'white',
+      border: 'none',
+      borderRadius: '8px',
+      fontSize: '1em',
+      cursor: 'pointer'
+    }
+  };
+  
   const renderTestList = () => (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
       <div className="container mx-auto px-4">
