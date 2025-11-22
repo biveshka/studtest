@@ -1,22 +1,16 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { resolve } from 'path'
 
+// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
   build: {
     outDir: 'dist',
-    sourcemap: false,
-    rollupOptions: {
-      input: {
-        main: resolve(__dirname, 'index.html'),
-      },
-    },
+    emptyOutDir: true,
   },
   server: {
     port: 3000,
-    host: true
   },
-  // Важная настройка для деплоя на Vercel
+  // Критически важная настройка для Vercel
   base: '/',
 })
