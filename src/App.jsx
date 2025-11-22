@@ -1,36 +1,191 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import AdminPanel from './components/AdminPanel';
 import AdminLogin from './components/AdminLogin';
 import UserInterface from './components/UserInterface';
-import Test from './components/Test';
-import Results from './components/Results';
-import { testsAPI, usersAPI } from './services/api';
+
+// Демо данные тестов с тегами и отзывами
+const DEMO_TESTS = [
+  {
+    id: 1,
+    title: "Тест по JavaScript",
+    description: "Проверьте свои знания JavaScript",
+    question_count: 3,
+    max_score: 6,
+    is_published: true,
+    created_by: null,
+    average_rating: 4.5,
+    review_count: 12,
+    tags: [
+      { id: 1, name: 'JavaScript', color: '#F7DF1E' },
+      { id: 3, name: 'React', color: '#61DAFB' }
+    ],
+    reviews: [
+      {
+        id: 1,
+        user_name: "Иван Петров",
+        rating: 5,
+        comment: "Отличный тест! Очень полезные вопросы.",
+        created_at: "2024-01-15T10:30:00Z",
+        is_approved: true
+      },
+      {
+        id: 2,
+        user_name: "Мария Сидорова",
+        rating: 4,
+        comment: "Хороший тест, но можно добавить больше практических заданий.",
+        created_at: "2024-01-14T15:20:00Z",
+        is_approved: true
+      }
+    ],
+    questions: [
+      {
+        id: 101,
+        question_text: "Что такое closure в JavaScript?",
+        options: ["Функция внутри функции", "Область видимости функции", "Замыкание", "Все варианты"],
+        correct_answer: 2,
+        points: 2
+      },
+      {
+        id: 102,
+        question_text: "Какой метод используется для создания элемента React?",
+        options: ["React.createElement()", "React.newElement()", "React.makeElement()", "React.element()"],
+        correct_answer: 0,
+        points: 2
+      },
+      {
+        id: 103,
+        question_text: "Что возвращает функция useState в React?",
+        options: ["Только значение", "Только функцию обновления", "Массив [значение, функция]", "Объект с значением и функцией"],
+        correct_answer: 2,
+        points: 2
+      }
+    ]
+  },
+  {
+    id: 2,
+    title: "Тест по HTML/CSS",
+    description: "Основы веб-разработки",
+    question_count: 2,
+    max_score: 4,
+    is_published: true,
+    created_by: null,
+    average_rating: 4.2,
+    review_count: 8,
+    tags: [
+      { id: 2, name: 'HTML/CSS', color: '#E34F26' }
+    ],
+    reviews: [
+      {
+        id: 3,
+        user_name: "Алексей Козлов",
+        rating: 5,
+        comment: "Понятные вопросы, хорошая структура теста.",
+        created_at: "2024-01-13T09:15:00Z",
+        is_approved: true
+      }
+    ],
+    questions: [
+      {
+        id: 201,
+        question_text: "Что означает CSS?",
+        options: ["Computer Style Sheets", "Creative Style System", "Cascading Style Sheets", "Colorful Style Sheets"],
+        correct_answer: 2,
+        points: 2
+      },
+      {
+        id: 202,
+        question_text: "Какой тег используется для создания ссылки?",
+        options: ["<link>", "<a>", "<href>", "<url>"],
+        correct_answer: 1,
+        points: 2
+      }
+    ]
+  },
+  {
+    id: 3,
+    title: "Тест по Python",
+    description: "Основы программирования на Python",
+    question_count: 3,
+    max_score: 6,
+    is_published: true,
+    created_by: null,
+    average_rating: 4.7,
+    review_count: 15,
+    tags: [
+      { id: 4, name: 'Python', color: '#3776AB' },
+      { id: 5, name: 'Алгоритмы', color: '#FF6B6B' }
+    ],
+    reviews: [
+      {
+        id: 4,
+        user_name: "Дмитрий Новиков",
+        rating: 5,
+        comment: "Отличный тест для начинающих изучать Python!",
+        created_at: "2024-01-12T14:45:00Z",
+        is_approved: true
+      }
+    ],
+    questions: [
+      {
+        id: 301,
+        question_text: "Как создать список в Python?",
+        options: ["list = ()", "list = {}", "list = []", "list = <>"],
+        correct_answer: 2,
+        points: 2
+      },
+      {
+        id: 302,
+        question_text: "Какой оператор используется для возведения в степень?",
+        options: ["^", "**", "^^", "pow"],
+        correct_answer: 1,
+        points: 2
+      },
+      {
+        id: 303,
+        question_text: "Как объявить функцию в Python?",
+        options: ["function myFunc()", "def myFunc()", "func myFunc()", "define myFunc()"],
+        correct_answer: 1,
+        points: 2
+      }
+    ]
+  }
+];
+
+// Демо теги
+const DEMO_TAGS = [
+  { id: 1, name: 'JavaScript', color: '#F7DF1E' },
+  { id: 2, name: 'HTML/CSS', color: '#E34F26' },
+  { id: 3, name: 'React', color: '#61DAFB' },
+  { id: 4, name: 'Python', color: '#3776AB' },
+  { id: 5, name: 'Базы данных', color: '#336791' },
+  { id: 6, name: 'Алгоритмы', color: '#FF6B6B' }
+];
 
 function App() {
   const [currentView, setCurrentView] = useState('roleSelection');
-  const [tests, setTests] = useState([]);
+  const [tests, setTests] = useState(DEMO_TESTS);
+  const [tags] = useState(DEMO_TAGS);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [filteredTests, setFilteredTests] = useState(DEMO_TESTS);
+  const [selectedTag, setSelectedTag] = useState(null);
 
+  // Загрузка тестов из localStorage
   useEffect(() => {
-    loadTests();
+    const savedTests = localStorage.getItem('quizTests');
+    if (savedTests) {
+      setTests(JSON.parse(savedTests));
+    }
   }, []);
 
-  const loadTests = async () => {
-    try {
-      setLoading(true);
-      const testsData = await testsAPI.getTests();
-      setTests(testsData);
-    } catch (err) {
-      setError('Ошибка загрузки тестов: ' + err.message);
-      console.error('Error loading tests:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Сохранение тестов в localStorage
+  useEffect(() => {
+    localStorage.setItem('quizTests', JSON.stringify(tests));
+    setFilteredTests(selectedTag ? 
+      tests.filter(test => test.tags?.some(tag => tag.id === selectedTag.id)) 
+      : tests
+    );
+  }, [tests, selectedTag]);
 
   const handleRoleSelection = (isAdmin) => {
     if (isAdmin) {
@@ -40,18 +195,10 @@ function App() {
     }
   };
 
-  const handleAdminLogin = async (email, password) => {
-    try {
-      setLoading(true);
-      const userData = await usersAPI.adminLogin(email, password);
-      setIsAuthenticated(true);
-      setUser(userData);
-      setCurrentView('admin');
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+  const handleAdminLogin = (userData) => {
+    setIsAuthenticated(true);
+    setUser(userData);
+    setCurrentView('admin');
   };
 
   const handleAdminLogout = () => {
@@ -60,49 +207,62 @@ function App() {
     setCurrentView('roleSelection');
   };
 
-  const handleAddTest = async (newTest) => {
-    try {
-      setLoading(true);
-      const testWithUser = {
-        ...newTest,
-        created_by: user?.id || null
-      };
-      const createdTest = await testsAPI.createTest(testWithUser);
-      setTests(prev => [...prev, createdTest]);
-    } catch (err) {
-      setError('Ошибка создания теста: ' + err.message);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
+  const handleAddTest = (newTest) => {
+    const testWithId = {
+      ...newTest,
+      id: Date.now(),
+      question_count: newTest.questions.length,
+      max_score: newTest.questions.reduce((sum, q) => sum + q.points, 0),
+      is_published: true,
+      created_by: user?.id || null,
+      average_rating: 0,
+      review_count: 0,
+      reviews: []
+    };
+    setTests(prev => [...prev, testWithId]);
   };
 
-  const handleUpdateTest = async (updatedTest) => {
-    try {
-      setLoading(true);
-      const result = await testsAPI.updateTest(updatedTest.id, updatedTest);
-      setTests(prev => prev.map(test => 
-        test.id === updatedTest.id ? result : test
-      ));
-    } catch (err) {
-      setError('Ошибка обновления теста: ' + err.message);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
+  const handleUpdateTest = (updatedTest) => {
+    setTests(prev => prev.map(test => 
+      test.id === updatedTest.id ? {
+        ...updatedTest,
+        question_count: updatedTest.questions.length,
+        max_score: updatedTest.questions.reduce((sum, q) => sum + q.points, 0)
+      } : test
+    ));
   };
 
-  const handleDeleteTest = async (testId) => {
-    try {
-      setLoading(true);
-      await testsAPI.deleteTest(testId);
-      setTests(prev => prev.filter(test => test.id !== testId));
-    } catch (err) {
-      setError('Ошибка удаления теста: ' + err.message);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
+  const handleDeleteTest = (testId) => {
+    setTests(prev => prev.filter(test => test.id !== testId));
+  };
+
+  const handleAddReview = (testId, review) => {
+    setTests(prev => prev.map(test => {
+      if (test.id === testId) {
+        const newReview = {
+          ...review,
+          id: Date.now(),
+          user_name: 'Вы',
+          created_at: new Date().toISOString(),
+          is_approved: true
+        };
+        
+        const updatedReviews = [...(test.reviews || []), newReview];
+        const average_rating = updatedReviews.reduce((sum, r) => sum + r.rating, 0) / updatedReviews.length;
+        
+        return {
+          ...test,
+          reviews: updatedReviews,
+          average_rating: parseFloat(average_rating.toFixed(1)),
+          review_count: updatedReviews.length
+        };
+      }
+      return test;
+    }));
+  };
+
+  const handleTagFilter = (tag) => {
+    setSelectedTag(selectedTag?.id === tag.id ? null : tag);
   };
 
   const renderRoleSelection = () => (
@@ -113,21 +273,14 @@ function App() {
             Система тестирования
           </h1>
           <p className="text-gray-600">
-            Данные сохраняются в облачной базе и доступны на всех устройствах
+            Выберите режим входа в систему
           </p>
         </div>
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
-            <p className="text-red-600 text-sm">{error}</p>
-          </div>
-        )}
-
         <div className="space-y-4">
           <button
-            onClick={() => window.location.href = '/user'}
+            onClick={() => handleRoleSelection(false)}
             className="w-full bg-blue-600 text-white py-4 px-6 rounded-xl hover:bg-blue-700 transition-colors duration-200 font-semibold text-lg"
-            disabled={loading}
           >
             🎓 Студент
             <div className="text-sm font-normal mt-1 opacity-90">
@@ -136,9 +289,8 @@ function App() {
           </button>
 
           <button
-            onClick={() => setCurrentView('adminLogin')}
+            onClick={() => handleRoleSelection(true)}
             className="w-full bg-green-600 text-white py-4 px-6 rounded-xl hover:bg-green-700 transition-colors duration-200 font-semibold text-lg"
-            disabled={loading}
           >
             ⚙️ Администратор
             <div className="text-sm font-normal mt-1 opacity-90">
@@ -148,62 +300,43 @@ function App() {
         </div>
 
         <div className="mt-6 text-center text-gray-500 text-sm">
-          Cloud Sync Enabled ✓
+          Версия 2.0 с тегами и отзывами
         </div>
       </div>
     </div>
   );
 
-  if (loading && currentView === 'roleSelection') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Загрузка данных...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <Router>
-      <div>
-        {currentView === 'roleSelection' && renderRoleSelection()}
-        
-        <Routes>
-          <Route path="/user" element={
-            <UserInterface 
-              tests={tests} 
-              onBackToRoleSelection={() => setCurrentView('roleSelection')}
-              loading={loading}
-            />
-          } />
-          <Route path="/test/:id" element={<Test />} />
-          <Route path="/results/:testId" element={<Results />} />
-        </Routes>
-
-        {currentView === 'adminLogin' && (
-          <AdminLogin 
-            onLogin={handleAdminLogin}
-            onBack={() => setCurrentView('roleSelection')}
-            loading={loading}
-            error={error}
-          />
-        )}
-        {currentView === 'admin' && (
-          <AdminPanel 
-            tests={tests}
-            onAddTest={handleAddTest}
-            onUpdateTest={handleUpdateTest}
-            onDeleteTest={handleDeleteTest}
-            onLogout={handleAdminLogout}
-            user={user}
-            loading={loading}
-            onRefresh={loadTests}
-          />
-        )}
-      </div>
-    </Router>
+    <div>
+      {currentView === 'roleSelection' && renderRoleSelection()}
+      {currentView === 'user' && (
+        <UserInterface 
+          tests={filteredTests.filter(test => test.is_published)} 
+          tags={tags}
+          selectedTag={selectedTag}
+          onTagFilter={handleTagFilter}
+          onAddReview={handleAddReview}
+          onBackToRoleSelection={() => setCurrentView('roleSelection')}
+        />
+      )}
+      {currentView === 'adminLogin' && (
+        <AdminLogin 
+          onLogin={handleAdminLogin}
+          onBack={() => setCurrentView('roleSelection')}
+        />
+      )}
+      {currentView === 'admin' && (
+        <AdminPanel 
+          tests={tests}
+          tags={tags}
+          onAddTest={handleAddTest}
+          onUpdateTest={handleUpdateTest}
+          onDeleteTest={handleDeleteTest}
+          onLogout={handleAdminLogout}
+          user={user}
+        />
+      )}
+    </div>
   );
 }
 

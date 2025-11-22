@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { testsAPI, resultsAPI } from '../services/api';
+import axios from 'axios';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 const Test = () => {
   const { id } = useParams();
@@ -11,7 +13,6 @@ const Test = () => {
   const [userName, setUserName] = useState('');
   const [showNameModal, setShowNameModal] = useState(true);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
 
   useEffect(() => {
     fetchTest();
@@ -19,14 +20,10 @@ const Test = () => {
 
   const fetchTest = async () => {
     try {
-      setLoading(true);
-      setError('');
-      console.log('Loading test with ID:', id);
-      const testData = await testsAPI.getTestById(id);
-      setTest(testData);
-    } catch (err) {
-      console.error('Error fetching test:', err);
-      setError('Не удалось загрузить тест из базы данных.');
+      const response = await axios.get(`${API_BASE_URL}/tests/${id}`);
+      setTest(response.data);
+    } catch (error) {
+      console.error('Error fetching test:', error);
     } finally {
       setLoading(false);
     }
@@ -72,8 +69,7 @@ const Test = () => {
     const maxScore = test.questions.reduce((sum, q) => sum + q.points, 0);
 
     try {
-      console.log('Saving test results...');
-      await resultsAPI.saveResult({
+      await axios.post(`${API_BASE_URL}/results`, {
         test_id: test.id,
         user_name: userName,
         score,
@@ -89,7 +85,7 @@ const Test = () => {
       });
     } catch (error) {
       console.error('Error saving results:', error);
-      alert('Ошибка при сохранении результатов в базу данных');
+      alert('Ошибка при сохранении результатов');
     }
   };
 
@@ -97,21 +93,6 @@ const Test = () => {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        <span className="ml-4">Загрузка теста...</span>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-red-500 text-lg">{error}</p>
-        <button 
-          onClick={() => navigate('/user')}
-          className="mt-4 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
-        >
-          Вернуться к тестам
-        </button>
       </div>
     );
   }
@@ -120,19 +101,13 @@ const Test = () => {
     return (
       <div className="text-center py-12">
         <p className="text-red-500 text-lg">Тест не найден</p>
-        <button 
-          onClick={() => navigate('/user')}
-          className="mt-4 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
-        >
-          Вернуться к тестам
-        </button>
       </div>
     );
   }
 
   if (showNameModal) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg p-6 max-w-md w-full">
           <h2 className="text-2xl font-bold mb-4">Введите ваше имя</h2>
           <input

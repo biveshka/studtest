@@ -1,34 +1,24 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { resultsAPI } from '../services/api';
+import TestReviews from './TestReviews';
 
-const UserInterface = ({ tests, onBackToRoleSelection, loading }) => {
-  const navigate = useNavigate();
+const UserInterface = ({ tests, tags, selectedTag, onTagFilter, onAddReview, onBackToRoleSelection }) => {
   const [currentScreen, setCurrentScreen] = useState('testList');
   const [currentTest, setCurrentTest] = useState(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState({});
   const [userName, setUserName] = useState('');
   const [showNameModal, setShowNameModal] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [selectedTag, setSelectedTag] = useState(null);
+  const [showReviews, setShowReviews] = useState(false);
 
-  // Получаем уникальные теги из всех тестов
-  const allTags = [];
-  tests.forEach(test => {
-    if (test.tags) {
-      test.tags.forEach(tag => {
-        if (!allTags.some(t => t.id === tag.id)) {
-          allTags.push(tag);
-        }
-      });
-    }
-  });
-
-  // Фильтруем тесты по выбранному тегу
-  const filteredTests = selectedTag 
-    ? tests.filter(test => test.tags?.some(tag => tag.id === selectedTag.id))
-    : tests;
+  const resetTest = () => {
+    setCurrentTest(null);
+    setCurrentQuestionIndex(0);
+    setUserAnswers({});
+    setUserName('');
+    setShowNameModal(false);
+    setCurrentScreen('testList');
+    setShowReviews(false);
+  };
 
   const startTest = (test) => {
     setCurrentTest(test);
@@ -74,47 +64,14 @@ const UserInterface = ({ tests, onBackToRoleSelection, loading }) => {
     return score;
   };
 
-  const finishTest = async () => {
-    try {
-      setSaving(true);
-      const score = calculateScore();
-      const maxScore = currentTest.max_score;
-      
-      // Сохраняем результат в Supabase
-      await resultsAPI.saveResult({
-        test_id: currentTest.id,
-        user_name: userName,
-        score: score,
-        max_score: maxScore,
-        answers: Object.entries(userAnswers).map(([questionId, answerIndex]) => ({
-          question_id: questionId,
-          answer_index: answerIndex
-        }))
-      });
-
-      // Переходим на страницу результатов
-      navigate(`/results/${currentTest.id}`, {
-        state: { 
-          score, 
-          maxScore, 
-          userName,
-          testTitle: currentTest.title
-        }
-      });
-    } catch (error) {
-      console.error('Error saving result:', error);
-      alert('Ошибка сохранения результата: ' + error.message);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const resetTest = () => {
-    setCurrentTest(null);
-    setCurrentQuestionIndex(0);
-    setUserAnswers({});
-    setUserName('');
-    setCurrentScreen('testList');
+  const finishTest = () => {
+    const score = calculateScore();
+    const maxScore = currentTest.max_score;
+    
+    // В реальном приложении здесь будет сохранение в базу
+    console.log('Результат теста:', { userName, score, maxScore, testId: currentTest.id });
+    
+    setCurrentScreen('results');
   };
 
   const getScoreColor = (score, maxScore) => {
@@ -175,114 +132,118 @@ const UserInterface = ({ tests, onBackToRoleSelection, loading }) => {
         </div>
 
         {/* Фильтр по тегам */}
-        {allTags.length > 0 && (
-          <div className="mb-8">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Фильтр по тегам:</h3>
-            <div className="flex flex-wrap gap-2">
+        <div className="mb-8">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Фильтр по тегам:</h3>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => onTagFilter(null)}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                !selectedTag 
+                  ? 'bg-blue-600 text-white' 
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              Все тесты
+            </button>
+            {tags.map(tag => (
               <button
-                onClick={() => setSelectedTag(null)}
+                key={tag.id}
+                onClick={() => onTagFilter(tag)}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  !selectedTag 
-                    ? 'bg-blue-600 text-white' 
+                  selectedTag?.id === tag.id
+                    ? 'text-white'
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                 }`}
+                style={{
+                  backgroundColor: selectedTag?.id === tag.id ? tag.color : undefined
+                }}
               >
-                Все тесты
+                {tag.name}
               </button>
-              {allTags.map(tag => (
-                <button
-                  key={tag.id}
-                  onClick={() => setSelectedTag(tag)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                    selectedTag?.id === tag.id
-                      ? 'text-white'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-                  style={{
-                    backgroundColor: selectedTag?.id === tag.id ? tag.color : undefined
-                  }}
-                >
-                  {tag.name}
-                </button>
-              ))}
+            ))}
+          </div>
+          {selectedTag && (
+            <div className="mt-3 text-sm text-gray-600">
+              Активный фильтр: <span style={{ color: selectedTag.color }}>{selectedTag.name}</span>
+              <button 
+                onClick={() => onTagFilter(null)}
+                className="ml-2 text-blue-600 hover:text-blue-800"
+              >
+                × Сбросить
+              </button>
             </div>
-            {selectedTag && (
-              <div className="mt-3 text-sm text-gray-600">
-                Активный фильтр: <span style={{ color: selectedTag.color }}>{selectedTag.name}</span>
-                <button 
-                  onClick={() => setSelectedTag(null)}
-                  className="ml-2 text-blue-600 hover:text-blue-800"
-                >
-                  × Сбросить
-                </button>
-              </div>
-            )}
-          </div>
-        )}
+          )}
+        </div>
 
-        {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          </div>
-        ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredTests.map((test) => (
-              <div key={test.id} className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
-                <div className="flex justify-between items-start mb-3">
-                  <h3 className="text-xl font-semibold text-gray-800 flex-1">
-                    {test.title}
-                  </h3>
-                  {test.average_rating > 0 && (
-                    <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded">
-                      <span className="text-yellow-600">★</span>
-                      <span className="text-sm font-medium text-yellow-700">
-                        {test.average_rating?.toFixed(1) || '0.0'}
-                      </span>
-                      <span className="text-xs text-yellow-600">({test.review_count || 0})</span>
-                    </div>
-                  )}
-                </div>
-                
-                <p className="text-gray-600 mb-4 line-clamp-2">
-                  {test.description}
-                </p>
-                
-                {/* Теги теста */}
-                {test.tags && test.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mb-4">
-                    {test.tags.map(tag => (
-                      <span
-                        key={tag.id}
-                        className="px-2 py-1 rounded-full text-xs font-medium text-white"
-                        style={{ backgroundColor: tag.color }}
-                      >
-                        {tag.name}
-                      </span>
-                    ))}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {tests.map((test) => (
+            <div key={test.id} className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
+              <div className="flex justify-between items-start mb-3">
+                <h3 className="text-xl font-semibold text-gray-800 flex-1">
+                  {test.title}
+                </h3>
+                {test.average_rating > 0 && (
+                  <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded">
+                    <span className="text-yellow-600">★</span>
+                    <span className="text-sm font-medium text-yellow-700">
+                      {test.average_rating.toFixed(1)}
+                    </span>
+                    <span className="text-xs text-yellow-600">({test.review_count})</span>
                   </div>
                 )}
-                
-                <div className="flex justify-between items-center mb-4">
-                  <span className="text-sm text-gray-500">
-                    Вопросов: {test.question_count || 0}
-                  </span>
-                  <span className="text-sm text-gray-500">
-                    Баллов: {test.max_score || 0}
-                  </span>
+              </div>
+              
+              <p className="text-gray-600 mb-4 line-clamp-2">
+                {test.description}
+              </p>
+              
+              {/* Теги теста */}
+              {test.tags && test.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1 mb-4">
+                  {test.tags.map(tag => (
+                    <span
+                      key={tag.id}
+                      className="px-2 py-1 rounded-full text-xs font-medium text-white"
+                      style={{ backgroundColor: tag.color }}
+                    >
+                      {tag.name}
+                    </span>
+                  ))}
                 </div>
-                
+              )}
+              
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-sm text-gray-500">
+                  Вопросов: {test.question_count}
+                </span>
+                <span className="text-sm text-gray-500">
+                  Баллов: {test.max_score}
+                </span>
+              </div>
+              
+              <div className="flex gap-2">
                 <button
                   onClick={() => startTest(test)}
-                  className="w-full bg-blue-600 text-white text-center py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                  className="flex-1 bg-blue-600 text-white text-center py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200"
                 >
                   Начать тест
                 </button>
+                <button
+                  onClick={() => {
+                    setCurrentTest(test);
+                    setShowReviews(true);
+                  }}
+                  className="bg-gray-500 text-white px-3 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+                  title="Посмотреть отзывы"
+                >
+                  💬
+                </button>
               </div>
-            ))}
-          </div>
-        )}
+            </div>
+          ))}
+        </div>
 
-        {filteredTests.length === 0 && !loading && (
+        {tests.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-500 text-lg">Нет доступных тестов</p>
             <p className="text-gray-400">Попробуйте выбрать другой фильтр</p>
@@ -293,7 +254,7 @@ const UserInterface = ({ tests, onBackToRoleSelection, loading }) => {
   );
 
   const renderTest = () => {
-    if (!currentTest || !currentTest.questions) return null;
+    if (!currentTest) return null;
     
     const question = currentTest.questions[currentQuestionIndex];
     const progress = ((currentQuestionIndex + 1) / currentTest.questions.length) * 100;
@@ -303,21 +264,6 @@ const UserInterface = ({ tests, onBackToRoleSelection, loading }) => {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
         <div className="container mx-auto px-4">
           <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6">
-            {/* Заголовок и кнопка назад */}
-            <div className="flex justify-between items-center mb-6">
-              <h1 className="text-2xl font-bold text-gray-800">{currentTest.title}</h1>
-              <button
-                onClick={() => {
-                  if (window.confirm('Вы уверены, что хотите прервать тест? Ваши ответы не сохранятся.')) {
-                    resetTest();
-                  }
-                }}
-                className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
-              >
-                Прервать тест
-              </button>
-            </div>
-
             {/* Прогресс бар */}
             <div className="mb-6">
               <div className="flex justify-between items-center mb-2">
@@ -344,7 +290,7 @@ const UserInterface = ({ tests, onBackToRoleSelection, loading }) => {
               
               {/* Варианты ответов */}
               <div className="space-y-3">
-                {question.options && question.options.map((option, index) => (
+                {question.options.map((option, index) => (
                   <button
                     key={index}
                     onClick={() => selectAnswer(question.id, index)}
@@ -373,10 +319,9 @@ const UserInterface = ({ tests, onBackToRoleSelection, loading }) => {
               {isLastQuestion ? (
                 <button
                   onClick={finishTest}
-                  disabled={saving}
-                  className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                  className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                 >
-                  {saving ? 'Сохранение...' : 'Завершить тест'}
+                  Завершить тест
                 </button>
               ) : (
                 <button
@@ -393,11 +338,92 @@ const UserInterface = ({ tests, onBackToRoleSelection, loading }) => {
     );
   };
 
+  const renderResults = () => {
+    if (!currentTest) return null;
+    
+    const score = calculateScore();
+    const maxScore = currentTest.max_score;
+    const percentage = Math.round((score / maxScore) * 100);
+    const scoreClass = getScoreColor(score, maxScore);
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
+        <div className="container mx-auto px-4">
+          <div className="max-w-2xl mx-auto">
+            <div className="bg-white rounded-lg shadow-lg p-8 mb-8 text-center">
+              <h2 className="text-3xl font-bold text-gray-800 mb-4">
+                Тест завершен!
+              </h2>
+              <div className={`text-5xl font-bold mb-4 ${scoreClass}`}>
+                {score} / {maxScore}
+              </div>
+              <p className="text-lg text-gray-600 mb-2">
+                Поздравляем, {userName}!
+              </p>
+              <p className="text-gray-500">
+                Ваш результат: {percentage}%
+              </p>
+              <div className="mt-4">
+                {percentage >= 80 && (
+                  <span className="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-semibold">
+                    Отличный результат! 🎉
+                  </span>
+                )}
+                {percentage >= 60 && percentage < 80 && (
+                  <span className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded-full text-sm font-semibold">
+                    Хороший результат! 👍
+                  </span>
+                )}
+                {percentage < 60 && (
+                  <span className="bg-red-100 text-red-800 px-4 py-2 rounded-full text-sm font-semibold">
+                    Попробуйте еще раз! 💪
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="text-center space-y-4">
+              <button
+                onClick={resetTest}
+                className="bg-blue-600 text-white py-3 px-8 rounded-lg hover:bg-blue-700 transition-colors mr-4"
+              >
+                Пройти другой тест
+              </button>
+              <button
+                onClick={() => {
+                  setShowReviews(true);
+                  setCurrentScreen('testList');
+                }}
+                className="bg-purple-600 text-white py-3 px-8 rounded-lg hover:bg-purple-700 transition-colors"
+              >
+                Оставить отзыв
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  if (showReviews && currentTest) {
+    return (
+      <TestReviews
+        test={currentTest}
+        onAddReview={(review) => {
+          onAddReview(currentTest.id, review);
+          setShowReviews(false);
+        }}
+        onBack={() => setShowReviews(false)}
+      />
+    );
+  }
+
   return (
     <div>
       {showNameModal && renderNameInput()}
       {currentScreen === 'testList' && renderTestList()}
       {currentScreen === 'test' && renderTest()}
+      {currentScreen === 'results' && renderResults()}
     </div>
   );
 };
