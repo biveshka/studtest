@@ -68,7 +68,6 @@ const UserInterface = ({ tests, tags, selectedTag, onTagFilter, onAddReview, onB
     const score = calculateScore();
     const maxScore = currentTest.max_score;
     
-    // В реальном приложении здесь будет сохранение в базу
     console.log('Результат теста:', { userName, score, maxScore, testId: currentTest.id });
     
     setCurrentScreen('results');
@@ -76,33 +75,88 @@ const UserInterface = ({ tests, tags, selectedTag, onTagFilter, onAddReview, onB
 
   const getScoreColor = (score, maxScore) => {
     const percentage = (score / maxScore) * 100;
-    if (percentage >= 80) return 'text-green-600';
-    if (percentage >= 60) return 'text-yellow-600';
-    return 'text-red-600';
+    if (percentage >= 80) return '#059669'; // green-600
+    if (percentage >= 60) return '#d97706'; // yellow-600
+    return '#dc2626'; // red-600
   };
 
   const renderNameInput = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg p-6 max-w-md w-full">
-        <h2 className="text-2xl font-bold mb-4 text-gray-800">Введите ваше имя</h2>
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '1rem',
+      zIndex: 50
+    }}>
+      <div style={{
+        backgroundColor: 'white',
+        borderRadius: '0.75rem',
+        padding: '1.5rem',
+        maxWidth: '28rem',
+        width: '100%'
+      }}>
+        <h2 style={{
+          fontSize: '1.5rem',
+          fontWeight: 'bold',
+          marginBottom: '1rem',
+          color: '#1f2937'
+        }}>Введите ваше имя</h2>
         <input
           type="text"
           value={userName}
           onChange={(e) => setUserName(e.target.value)}
           placeholder="Ваше имя"
-          className="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          style={{
+            width: '100%',
+            padding: '0.75rem',
+            border: '1px solid #d1d5db',
+            borderRadius: '0.5rem',
+            marginBottom: '1rem',
+            fontSize: '1rem'
+          }}
           onKeyPress={(e) => e.key === 'Enter' && confirmNameAndStart()}
         />
-        <div className="flex gap-3">
+        <div style={{
+          display: 'flex',
+          gap: '0.75rem'
+        }}>
           <button 
             onClick={() => setShowNameModal(false)} 
-            className="flex-1 bg-gray-500 text-white py-3 rounded-lg hover:bg-gray-600 transition-colors"
+            style={{
+              flex: 1,
+              backgroundColor: '#6b7280',
+              color: 'white',
+              padding: '0.75rem',
+              borderRadius: '0.5rem',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'background-color 0.2s'
+            }}
+            onMouseOver={(e) => e.target.style.backgroundColor = '#4b5563'}
+            onMouseOut={(e) => e.target.style.backgroundColor = '#6b7280'}
           >
             Отмена
           </button>
           <button 
             onClick={confirmNameAndStart} 
-            className="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors"
+            style={{
+              flex: 1,
+              backgroundColor: '#2563eb',
+              color: 'white',
+              padding: '0.75rem',
+              borderRadius: '0.5rem',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'background-color 0.2s'
+            }}
+            onMouseOver={(e) => e.target.style.backgroundColor = '#1d4ed8'}
+            onMouseOut={(e) => e.target.style.backgroundColor = '#2563eb'}
           >
             Начать тест
           </button>
@@ -110,38 +164,94 @@ const UserInterface = ({ tests, tags, selectedTag, onTagFilter, onAddReview, onB
       </div>
     </div>
   );
-  
+
   const renderTestList = () => (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
-      <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center mb-8">
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%)',
+      padding: '2rem 0'
+    }}>
+      <div style={{
+        maxWidth: '1200px',
+        margin: '0 auto',
+        padding: '0 1rem'
+      }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '2rem'
+        }}>
           <div>
-            <h1 className="text-4xl font-bold text-gray-800 mb-2">
+            <h1 style={{
+              fontSize: '2.25rem',
+              fontWeight: 'bold',
+              color: '#1f2937',
+              marginBottom: '0.5rem'
+            }}>
               Система тестирования
             </h1>
-            <p className="text-lg text-gray-600">
+            <p style={{
+              fontSize: '1.125rem',
+              color: '#6b7280'
+            }}>
               Выберите тест для прохождения
             </p>
           </div>
           <button
             onClick={onBackToRoleSelection}
-            className="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition-colors"
+            style={{
+              backgroundColor: '#6b7280',
+              color: 'white',
+              padding: '0.75rem 1.5rem',
+              borderRadius: '0.5rem',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'background-color 0.2s'
+            }}
+            onMouseOver={(e) => e.target.style.backgroundColor = '#4b5563'}
+            onMouseOut={(e) => e.target.style.backgroundColor = '#6b7280'}
           >
             Сменить роль
           </button>
         </div>
 
         {/* Фильтр по тегам */}
-        <div className="mb-8">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Фильтр по тегам:</h3>
-          <div className="flex flex-wrap gap-2">
+        <div style={{ marginBottom: '2rem' }}>
+          <h3 style={{
+            fontSize: '1.125rem',
+            fontWeight: '600',
+            color: '#1f2937',
+            marginBottom: '1rem'
+          }}>Фильтр по тегам:</h3>
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '0.5rem'
+          }}>
             <button
               onClick={() => onTagFilter(null)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                !selectedTag 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
+              style={{
+                padding: '0.5rem 1rem',
+                borderRadius: '9999px',
+                fontSize: '0.875rem',
+                fontWeight: '500',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                backgroundColor: !selectedTag ? '#2563eb' : '#e5e7eb',
+                color: !selectedTag ? 'white' : '#374151'
+              }}
+              onMouseOver={(e) => {
+                if (selectedTag) {
+                  e.target.style.backgroundColor = '#d1d5db';
+                }
+              }}
+              onMouseOut={(e) => {
+                if (selectedTag) {
+                  e.target.style.backgroundColor = '#e5e7eb';
+                }
+              }}
             >
               Все тесты
             </button>
@@ -149,13 +259,26 @@ const UserInterface = ({ tests, tags, selectedTag, onTagFilter, onAddReview, onB
               <button
                 key={tag.id}
                 onClick={() => onTagFilter(tag)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  selectedTag?.id === tag.id
-                    ? 'text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
                 style={{
-                  backgroundColor: selectedTag?.id === tag.id ? tag.color : undefined
+                  padding: '0.5rem 1rem',
+                  borderRadius: '9999px',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  backgroundColor: selectedTag?.id === tag.id ? tag.color : '#e5e7eb',
+                  color: selectedTag?.id === tag.id ? 'white' : '#374151'
+                }}
+                onMouseOver={(e) => {
+                  if (!selectedTag || selectedTag.id !== tag.id) {
+                    e.target.style.backgroundColor = '#d1d5db';
+                  }
+                }}
+                onMouseOut={(e) => {
+                  if (!selectedTag || selectedTag.id !== tag.id) {
+                    e.target.style.backgroundColor = '#e5e7eb';
+                  }
                 }}
               >
                 {tag.name}
@@ -163,11 +286,23 @@ const UserInterface = ({ tests, tags, selectedTag, onTagFilter, onAddReview, onB
             ))}
           </div>
           {selectedTag && (
-            <div className="mt-3 text-sm text-gray-600">
-              Активный фильтр: <span style={{ color: selectedTag.color }}>{selectedTag.name}</span>
+            <div style={{
+              marginTop: '0.75rem',
+              fontSize: '0.875rem',
+              color: '#6b7280'
+            }}>
+              Активный фильтр: <span style={{ color: selectedTag.color, fontWeight: '500' }}>{selectedTag.name}</span>
               <button 
                 onClick={() => onTagFilter(null)}
-                className="ml-2 text-blue-600 hover:text-blue-800"
+                style={{
+                  marginLeft: '0.5rem',
+                  color: '#2563eb',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer'
+                }}
+                onMouseOver={(e) => e.target.style.color = '#1e40af'}
+                onMouseOut={(e) => e.target.style.color = '#2563eb'}
               >
                 × Сбросить
               </button>
@@ -175,36 +310,98 @@ const UserInterface = ({ tests, tags, selectedTag, onTagFilter, onAddReview, onB
           )}
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+          gap: '1.5rem'
+        }}>
           {tests.map((test) => (
-            <div key={test.id} className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
-              <div className="flex justify-between items-start mb-3">
-                <h3 className="text-xl font-semibold text-gray-800 flex-1">
+            <div key={test.id} style={{
+              backgroundColor: 'white',
+              borderRadius: '0.75rem',
+              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+              padding: '1.5rem',
+              transition: 'all 0.3s ease',
+              cursor: 'pointer'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.transform = 'translateY(-4px)';
+              e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
+            }}
+            >
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                marginBottom: '0.75rem'
+              }}>
+                <h3 style={{
+                  fontSize: '1.25rem',
+                  fontWeight: '600',
+                  color: '#1f2937',
+                  flex: 1
+                }}>
                   {test.title}
                 </h3>
                 {test.average_rating > 0 && (
-                  <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded">
-                    <span className="text-yellow-600">★</span>
-                    <span className="text-sm font-medium text-yellow-700">
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.25rem',
+                    backgroundColor: '#fefce8',
+                    padding: '0.25rem 0.5rem',
+                    borderRadius: '0.375rem'
+                  }}>
+                    <span style={{ color: '#d97706' }}>★</span>
+                    <span style={{
+                      fontSize: '0.875rem',
+                      fontWeight: '500',
+                      color: '#92400e'
+                    }}>
                       {test.average_rating.toFixed(1)}
                     </span>
-                    <span className="text-xs text-yellow-600">({test.review_count})</span>
+                    <span style={{
+                      fontSize: '0.75rem',
+                      color: '#92400e'
+                    }}>({test.review_count})</span>
                   </div>
                 )}
               </div>
               
-              <p className="text-gray-600 mb-4 line-clamp-2">
+              <p style={{
+                color: '#6b7280',
+                marginBottom: '1rem',
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden'
+              }}>
                 {test.description}
               </p>
               
               {/* Теги теста */}
               {test.tags && test.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1 mb-4">
+                <div style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '0.25rem',
+                  marginBottom: '1rem'
+                }}>
                   {test.tags.map(tag => (
                     <span
                       key={tag.id}
-                      className="px-2 py-1 rounded-full text-xs font-medium text-white"
-                      style={{ backgroundColor: tag.color }}
+                      style={{
+                        padding: '0.25rem 0.5rem',
+                        borderRadius: '9999px',
+                        fontSize: '0.75rem',
+                        fontWeight: '500',
+                        color: 'white',
+                        backgroundColor: tag.color
+                      }}
                     >
                       {tag.name}
                     </span>
@@ -212,19 +409,45 @@ const UserInterface = ({ tests, tags, selectedTag, onTagFilter, onAddReview, onB
                 </div>
               )}
               
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-sm text-gray-500">
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '1rem'
+              }}>
+                <span style={{
+                  fontSize: '0.875rem',
+                  color: '#6b7280'
+                }}>
                   Вопросов: {test.question_count}
                 </span>
-                <span className="text-sm text-gray-500">
+                <span style={{
+                  fontSize: '0.875rem',
+                  color: '#6b7280'
+                }}>
                   Баллов: {test.max_score}
                 </span>
               </div>
               
-              <div className="flex gap-2">
+              <div style={{
+                display: 'flex',
+                gap: '0.5rem'
+              }}>
                 <button
                   onClick={() => startTest(test)}
-                  className="flex-1 bg-blue-600 text-white text-center py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                  style={{
+                    flex: 1,
+                    backgroundColor: '#2563eb',
+                    color: 'white',
+                    textAlign: 'center',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '0.5rem',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseOver={(e) => e.target.style.backgroundColor = '#1d4ed8'}
+                  onMouseOut={(e) => e.target.style.backgroundColor = '#2563eb'}
                 >
                   Начать тест
                 </button>
@@ -233,7 +456,17 @@ const UserInterface = ({ tests, tags, selectedTag, onTagFilter, onAddReview, onB
                     setCurrentTest(test);
                     setShowReviews(true);
                   }}
-                  className="bg-gray-500 text-white px-3 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+                  style={{
+                    backgroundColor: '#6b7280',
+                    color: 'white',
+                    padding: '0.5rem',
+                    borderRadius: '0.5rem',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseOver={(e) => e.target.style.backgroundColor = '#4b5563'}
+                  onMouseOut={(e) => e.target.style.backgroundColor = '#6b7280'}
                   title="Посмотреть отзывы"
                 >
                   💬
@@ -244,9 +477,18 @@ const UserInterface = ({ tests, tags, selectedTag, onTagFilter, onAddReview, onB
         </div>
 
         {tests.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">Нет доступных тестов</p>
-            <p className="text-gray-400">Попробуйте выбрать другой фильтр</p>
+          <div style={{
+            textAlign: 'center',
+            padding: '3rem 0'
+          }}>
+            <p style={{
+              color: '#6b7280',
+              fontSize: '1.125rem',
+              marginBottom: '0.5rem'
+            }}>Нет доступных тестов</p>
+            <p style={{
+              color: '#9ca3af'
+            }}>Попробуйте выбрать другой фильтр</p>
           </div>
         )}
       </div>
@@ -261,44 +503,109 @@ const UserInterface = ({ tests, tags, selectedTag, onTagFilter, onAddReview, onB
     const isLastQuestion = currentQuestionIndex === currentTest.questions.length - 1;
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
-        <div className="container mx-auto px-4">
-          <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6">
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%)',
+        padding: '2rem 0'
+      }}>
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
+          padding: '0 1rem'
+        }}>
+          <div style={{
+            maxWidth: '42rem',
+            margin: '0 auto',
+            backgroundColor: 'white',
+            borderRadius: '0.75rem',
+            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+            padding: '1.5rem'
+          }}>
             {/* Прогресс бар */}
-            <div className="mb-6">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm text-gray-600">
+            <div style={{ marginBottom: '1.5rem' }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '0.5rem'
+              }}>
+                <span style={{
+                  fontSize: '0.875rem',
+                  color: '#6b7280'
+                }}>
                   Вопрос {currentQuestionIndex + 1} из {currentTest.questions.length}
                 </span>
-                <span className="text-sm font-semibold text-blue-600">
+                <span style={{
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  color: '#2563eb'
+                }}>
                   {question.points} баллов
                 </span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div style={{
+                width: '100%',
+                backgroundColor: '#e5e7eb',
+                borderRadius: '9999px',
+                height: '0.5rem'
+              }}>
                 <div
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${progress}%` }}
+                  style={{
+                    backgroundColor: '#2563eb',
+                    height: '0.5rem',
+                    borderRadius: '9999px',
+                    transition: 'width 0.3s ease',
+                    width: `${progress}%`
+                  }}
                 ></div>
               </div>
             </div>
 
             {/* Вопрос */}
-            <div className="mb-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">
+            <div style={{ marginBottom: '1.5rem' }}>
+              <h2 style={{
+                fontSize: '1.25rem',
+                fontWeight: '600',
+                color: '#1f2937',
+                marginBottom: '1rem'
+              }}>
                 {question.question_text}
               </h2>
               
               {/* Варианты ответов */}
-              <div className="space-y-3">
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.75rem'
+              }}>
                 {question.options.map((option, index) => (
                   <button
                     key={index}
                     onClick={() => selectAnswer(question.id, index)}
-                    className={`w-full text-left p-4 rounded-lg border-2 transition-all duration-200 ${
-                      userAnswers[question.id] === index
-                        ? 'border-blue-500 bg-blue-50 text-blue-700'
-                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                    }`}
+                    style={{
+                      width: '100%',
+                      textAlign: 'left',
+                      padding: '1rem',
+                      borderRadius: '0.5rem',
+                      border: '2px solid',
+                      borderColor: userAnswers[question.id] === index ? '#3b82f6' : '#e5e7eb',
+                      backgroundColor: userAnswers[question.id] === index ? '#dbeafe' : 'white',
+                      color: userAnswers[question.id] === index ? '#1e40af' : '#374151',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseOver={(e) => {
+                      if (userAnswers[question.id] !== index) {
+                        e.target.style.borderColor = '#d1d5db';
+                        e.target.style.backgroundColor = '#f9fafb';
+                      }
+                    }}
+                    onMouseOut={(e) => {
+                      if (userAnswers[question.id] !== index) {
+                        e.target.style.borderColor = '#e5e7eb';
+                        e.target.style.backgroundColor = 'white';
+                      }
+                    }}
                   >
                     {option}
                   </button>
@@ -307,11 +614,33 @@ const UserInterface = ({ tests, tags, selectedTag, onTagFilter, onAddReview, onB
             </div>
 
             {/* Навигация */}
-            <div className="flex justify-between">
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between'
+            }}>
               <button
                 onClick={prevQuestion}
                 disabled={currentQuestionIndex === 0}
-                className="px-6 py-2 border border-gray-300 rounded-lg text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                style={{
+                  padding: '0.5rem 1.5rem',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '0.5rem',
+                  color: '#6b7280',
+                  backgroundColor: 'white',
+                  cursor: currentQuestionIndex === 0 ? 'not-allowed' : 'pointer',
+                  opacity: currentQuestionIndex === 0 ? 0.5 : 1,
+                  transition: 'all 0.2s'
+                }}
+                onMouseOver={(e) => {
+                  if (currentQuestionIndex !== 0) {
+                    e.target.style.backgroundColor = '#f9fafb';
+                  }
+                }}
+                onMouseOut={(e) => {
+                  if (currentQuestionIndex !== 0) {
+                    e.target.style.backgroundColor = 'white';
+                  }
+                }}
               >
                 Назад
               </button>
@@ -319,14 +648,34 @@ const UserInterface = ({ tests, tags, selectedTag, onTagFilter, onAddReview, onB
               {isLastQuestion ? (
                 <button
                   onClick={finishTest}
-                  className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                  style={{
+                    padding: '0.5rem 1.5rem',
+                    backgroundColor: '#059669',
+                    color: 'white',
+                    borderRadius: '0.5rem',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseOver={(e) => e.target.style.backgroundColor = '#047857'}
+                  onMouseOut={(e) => e.target.style.backgroundColor = '#059669'}
                 >
                   Завершить тест
                 </button>
               ) : (
                 <button
                   onClick={nextQuestion}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  style={{
+                    padding: '0.5rem 1.5rem',
+                    backgroundColor: '#2563eb',
+                    color: 'white',
+                    borderRadius: '0.5rem',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseOver={(e) => e.target.style.backgroundColor = '#1d4ed8'}
+                  onMouseOut={(e) => e.target.style.backgroundColor = '#2563eb'}
                 >
                   Далее
                 </button>
@@ -344,48 +693,119 @@ const UserInterface = ({ tests, tags, selectedTag, onTagFilter, onAddReview, onB
     const score = calculateScore();
     const maxScore = currentTest.max_score;
     const percentage = Math.round((score / maxScore) * 100);
-    const scoreClass = getScoreColor(score, maxScore);
+    const scoreColor = getScoreColor(score, maxScore);
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
-        <div className="container mx-auto px-4">
-          <div className="max-w-2xl mx-auto">
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8 text-center">
-              <h2 className="text-3xl font-bold text-gray-800 mb-4">
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%)',
+        padding: '2rem 0'
+      }}>
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
+          padding: '0 1rem'
+        }}>
+          <div style={{
+            maxWidth: '42rem',
+            margin: '0 auto'
+          }}>
+            <div style={{
+              backgroundColor: 'white',
+              borderRadius: '0.75rem',
+              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+              padding: '2rem',
+              marginBottom: '2rem',
+              textAlign: 'center'
+            }}>
+              <h2 style={{
+                fontSize: '1.875rem',
+                fontWeight: 'bold',
+                color: '#1f2937',
+                marginBottom: '1rem'
+              }}>
                 Тест завершен!
               </h2>
-              <div className={`text-5xl font-bold mb-4 ${scoreClass}`}>
+              <div style={{
+                fontSize: '3rem',
+                fontWeight: 'bold',
+                marginBottom: '1rem',
+                color: scoreColor
+              }}>
                 {score} / {maxScore}
               </div>
-              <p className="text-lg text-gray-600 mb-2">
+              <p style={{
+                fontSize: '1.125rem',
+                color: '#6b7280',
+                marginBottom: '0.5rem'
+              }}>
                 Поздравляем, {userName}!
               </p>
-              <p className="text-gray-500">
+              <p style={{
+                color: '#6b7280'
+              }}>
                 Ваш результат: {percentage}%
               </p>
-              <div className="mt-4">
+              <div style={{ marginTop: '1rem' }}>
                 {percentage >= 80 && (
-                  <span className="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-semibold">
+                  <span style={{
+                    backgroundColor: '#d1fae5',
+                    color: '#065f46',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '9999px',
+                    fontSize: '0.875rem',
+                    fontWeight: '600'
+                  }}>
                     Отличный результат! 🎉
                   </span>
                 )}
                 {percentage >= 60 && percentage < 80 && (
-                  <span className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded-full text-sm font-semibold">
+                  <span style={{
+                    backgroundColor: '#fef3c7',
+                    color: '#92400e',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '9999px',
+                    fontSize: '0.875rem',
+                    fontWeight: '600'
+                  }}>
                     Хороший результат! 👍
                   </span>
                 )}
                 {percentage < 60 && (
-                  <span className="bg-red-100 text-red-800 px-4 py-2 rounded-full text-sm font-semibold">
+                  <span style={{
+                    backgroundColor: '#fee2e2',
+                    color: '#991b1b',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '9999px',
+                    fontSize: '0.875rem',
+                    fontWeight: '600'
+                  }}>
                     Попробуйте еще раз! 💪
                   </span>
                 )}
               </div>
             </div>
 
-            <div className="text-center space-y-4">
+            <div style={{
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '1rem'
+            }}>
               <button
                 onClick={resetTest}
-                className="bg-blue-600 text-white py-3 px-8 rounded-lg hover:bg-blue-700 transition-colors mr-4"
+                style={{
+                  backgroundColor: '#2563eb',
+                  color: 'white',
+                  padding: '0.75rem 2rem',
+                  borderRadius: '0.5rem',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseOver={(e) => e.target.style.backgroundColor = '#1d4ed8'}
+                onMouseOut={(e) => e.target.style.backgroundColor = '#2563eb'}
               >
                 Пройти другой тест
               </button>
@@ -394,7 +814,17 @@ const UserInterface = ({ tests, tags, selectedTag, onTagFilter, onAddReview, onB
                   setShowReviews(true);
                   setCurrentScreen('testList');
                 }}
-                className="bg-purple-600 text-white py-3 px-8 rounded-lg hover:bg-purple-700 transition-colors"
+                style={{
+                  backgroundColor: '#7c3aed',
+                  color: 'white',
+                  padding: '0.75rem 2rem',
+                  borderRadius: '0.5rem',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseOver={(e) => e.target.style.backgroundColor = '#6d28d9'}
+                onMouseOut={(e) => e.target.style.backgroundColor = '#7c3aed'}
               >
                 Оставить отзыв
               </button>

@@ -1,93 +1,157 @@
 import React, { useState } from 'react';
 
 const AdminLogin = ({ onLogin, onBack }) => {
-  const [credentials, setCredentials] = useState({
-    email: '',
-    password: ''
-  });
-  const [error, setError] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
-    if (credentials.email === 'admin@test.ru' && credentials.password === 'admin123') {
-      onLogin({
-        id: 1,
-        email: 'admin@test.ru',
-        full_name: 'Администратор Системы',
-        role: 'admin'
-      });
+    // Демо логин
+    if (username === 'admin' && password === 'admin') {
+      onLogin({ id: 1, name: 'Администратор' });
     } else {
-      setError('Неверный email или пароль');
+      alert('Неверные credentials! Используйте admin/admin');
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-teal-100 flex items-center justify-center py-8">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '1rem'
+    }}>
+      <div style={{
+        backgroundColor: 'white',
+        borderRadius: '1rem',
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+        padding: '2rem',
+        maxWidth: '28rem',
+        width: '100%'
+      }}>
         <button
           onClick={onBack}
-          className="flex items-center text-gray-600 hover:text-gray-800 mb-6"
+          style={{
+            backgroundColor: 'transparent',
+            border: 'none',
+            color: '#6b7280',
+            cursor: 'pointer',
+            marginBottom: '1rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}
         >
-          ← Назад к выбору роли
+          ← Назад
         </button>
 
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+        <div style={{
+          textAlign: 'center',
+          marginBottom: '2rem'
+        }}>
+          <h1 style={{
+            fontSize: '1.875rem',
+            fontWeight: 'bold',
+            color: '#1f2937',
+            marginBottom: '0.5rem'
+          }}>
             Вход для администратора
           </h1>
-          <p className="text-gray-600">
+          <p style={{
+            color: '#6b7280'
+          }}>
             Введите данные для доступа к панели управления
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: '1.5rem' }}>
+            <label style={{
+              display: 'block',
+              color: '#374151',
+              fontWeight: '500',
+              marginBottom: '0.5rem'
+            }}>
+              Логин
             </label>
             <input
-              type="email"
-              value={credentials.email}
-              onChange={(e) => setCredentials(prev => ({...prev, email: e.target.value}))}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-              placeholder="admin@test.ru"
-              required
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                border: '1px solid #d1d5db',
+                borderRadius: '0.5rem',
+                fontSize: '1rem',
+                transition: 'all 0.2s'
+              }}
+              onFocus={(e) => e.target.style.borderColor = '#2563eb'}
+              onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+              placeholder="Введите логин"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div style={{ marginBottom: '2rem' }}>
+            <label style={{
+              display: 'block',
+              color: '#374151',
+              fontWeight: '500',
+              marginBottom: '0.5rem'
+            }}>
               Пароль
             </label>
             <input
               type="password"
-              value={credentials.password}
-              onChange={(e) => setCredentials(prev => ({...prev, password: e.target.value}))}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                border: '1px solid #d1d5db',
+                borderRadius: '0.5rem',
+                fontSize: '1rem',
+                transition: 'all 0.2s'
+              }}
+              onFocus={(e) => e.target.style.borderColor = '#2563eb'}
+              onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
               placeholder="Введите пароль"
-              required
             />
           </div>
 
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-              <p className="text-red-600 text-sm">{error}</p>
-            </div>
-          )}
-
           <button
             type="submit"
-            className="w-full bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 transition-colors duration-200 font-semibold"
+            style={{
+              width: '100%',
+              backgroundColor: '#16a34a',
+              color: 'white',
+              padding: '0.75rem',
+              borderRadius: '0.5rem',
+              border: 'none',
+              cursor: 'pointer',
+              fontWeight: '600',
+              fontSize: '1rem',
+              transition: 'all 0.2s'
+            }}
+            onMouseOver={(e) => e.target.style.backgroundColor = '#15803d'}
+            onMouseOut={(e) => e.target.style.backgroundColor = '#16a34a'}
           >
             Войти
           </button>
         </form>
 
-        <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-          <h3 className="font-semibold text-gray-700 mb-2">Демо-доступ:</h3>
-          <p className="text-sm text-gray-600">Email: <span className="font-mono">admin@test.ru</span></p>
-          <p className="text-sm text-gray-600">Пароль: <span className="font-mono">admin123</span></p>
+        <div style={{
+          marginTop: '1.5rem',
+          padding: '1rem',
+          backgroundColor: '#f3f4f6',
+          borderRadius: '0.5rem',
+          fontSize: '0.875rem',
+          color: '#6b7280',
+          textAlign: 'center'
+        }}>
+          Демо доступ: admin / admin
         </div>
       </div>
     </div>
