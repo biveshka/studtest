@@ -31,75 +31,217 @@ const AdminPanel = ({ tests, tags, onAddTest, onUpdateTest, onDeleteTest, onLogo
   };
 
   const renderDashboard = () => (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-800">Панель управления</h2>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+      }}>
+        <h2 style={{
+          fontSize: '1.5rem',
+          fontWeight: 'bold',
+          color: '#1f2937'
+        }}>Панель управления</h2>
         <button
           onClick={handleCreateTest}
-          className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          style={{
+            backgroundColor: '#2563eb',
+            color: 'white',
+            padding: '0.5rem 1.5rem',
+            borderRadius: '0.5rem',
+            border: 'none',
+            cursor: 'pointer',
+            fontWeight: '500',
+            transition: 'background-color 0.2s'
+          }}
+          onMouseOver={(e) => e.target.style.backgroundColor = '#1d4ed8'}
+          onMouseOut={(e) => e.target.style.backgroundColor = '#2563eb'}
         >
           + Создать тест
         </button>
       </div>
 
       {/* Статистика */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">Всего тестов</h3>
-          <p className="text-3xl font-bold text-blue-600">{tests.length}</p>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        gap: '1.5rem',
+        marginBottom: '1.5rem'
+      }}>
+        <div style={{
+          backgroundColor: 'white',
+          padding: '1.5rem',
+          borderRadius: '0.75rem',
+          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+          border: '1px solid #e5e7eb'
+        }}>
+          <h3 style={{
+            fontSize: '1rem',
+            fontWeight: '600',
+            color: '#374151',
+            marginBottom: '0.5rem'
+          }}>Всего тестов</h3>
+          <p style={{
+            fontSize: '2rem',
+            fontWeight: 'bold',
+            color: '#2563eb'
+          }}>{tests.length}</p>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">Опубликовано</h3>
-          <p className="text-3xl font-bold text-green-600">
+        <div style={{
+          backgroundColor: 'white',
+          padding: '1.5rem',
+          borderRadius: '0.75rem',
+          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+          border: '1px solid #e5e7eb'
+        }}>
+          <h3 style={{
+            fontSize: '1rem',
+            fontWeight: '600',
+            color: '#374151',
+            marginBottom: '0.5rem'
+          }}>Опубликовано</h3>
+          <p style={{
+            fontSize: '2rem',
+            fontWeight: 'bold',
+            color: '#059669'
+          }}>
             {tests.filter(t => t.is_published).length}
           </p>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">Вопросов всего</h3>
-          <p className="text-3xl font-bold text-purple-600">
+        <div style={{
+          backgroundColor: 'white',
+          padding: '1.5rem',
+          borderRadius: '0.75rem',
+          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+          border: '1px solid #e5e7eb'
+        }}>
+          <h3 style={{
+            fontSize: '1rem',
+            fontWeight: '600',
+            color: '#374151',
+            marginBottom: '0.5rem'
+          }}>Вопросов всего</h3>
+          <p style={{
+            fontSize: '2rem',
+            fontWeight: 'bold',
+            color: '#7c3aed'
+          }}>
             {tests.reduce((sum, test) => sum + test.question_count, 0)}
           </p>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">Всего тегов</h3>
-          <p className="text-3xl font-bold text-orange-600">
+        <div style={{
+          backgroundColor: 'white',
+          padding: '1.5rem',
+          borderRadius: '0.75rem',
+          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+          border: '1px solid #e5e7eb'
+        }}>
+          <h3 style={{
+            fontSize: '1rem',
+            fontWeight: '600',
+            color: '#374151',
+            marginBottom: '0.5rem'
+          }}>Всего тегов</h3>
+          <p style={{
+            fontSize: '2rem',
+            fontWeight: 'bold',
+            color: '#ea580c'
+          }}>
             {tags.length}
           </p>
         </div>
       </div>
 
       {/* Список тестов */}
-      <div className="bg-white rounded-lg shadow border">
-        <div className="p-6 border-b">
-          <h3 className="text-xl font-semibold text-gray-800">Список тестов</h3>
+      <div style={{
+        backgroundColor: 'white',
+        borderRadius: '0.75rem',
+        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+        border: '1px solid #e5e7eb'
+      }}>
+        <div style={{
+          padding: '1.5rem',
+          borderBottom: '1px solid #e5e7eb'
+        }}>
+          <h3 style={{
+            fontSize: '1.25rem',
+            fontWeight: '600',
+            color: '#1f2937'
+          }}>Список тестов</h3>
         </div>
-        <div className="divide-y">
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column'
+        }}>
           {tests.map(test => (
-            <div key={test.id} className="p-6 flex justify-between items-start">
-              <div className="flex-1">
-                <div className="flex items-start justify-between mb-2">
-                  <h4 className="font-semibold text-gray-800 text-lg">{test.title}</h4>
+            <div key={test.id} style={{
+              padding: '1.5rem',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+              borderBottom: '1px solid #f3f4f6'
+            }}>
+              <div style={{ flex: 1 }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  justifyContent: 'space-between',
+                  marginBottom: '0.5rem'
+                }}>
+                  <h4 style={{
+                    fontWeight: '600',
+                    color: '#1f2937',
+                    fontSize: '1.125rem'
+                  }}>{test.title}</h4>
                   {test.average_rating > 0 && (
-                    <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded text-sm">
-                      <span className="text-yellow-600">★</span>
-                      <span className="font-medium text-yellow-700">
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.25rem',
+                      backgroundColor: '#fefce8',
+                      padding: '0.25rem 0.5rem',
+                      borderRadius: '0.375rem'
+                    }}>
+                      <span style={{ color: '#d97706' }}>★</span>
+                      <span style={{
+                        fontWeight: '500',
+                        color: '#92400e',
+                        fontSize: '0.875rem'
+                      }}>
                         {test.average_rating.toFixed(1)}
                       </span>
-                      <span className="text-yellow-600">({test.review_count})</span>
+                      <span style={{
+                        color: '#92400e',
+                        fontSize: '0.75rem'
+                      }}>({test.review_count})</span>
                     </div>
                   )}
                 </div>
                 
-                <p className="text-gray-600 mb-3">{test.description}</p>
+                <p style={{
+                  color: '#6b7280',
+                  marginBottom: '0.75rem'
+                }}>{test.description}</p>
                 
                 {/* Теги теста */}
                 {test.tags && test.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mb-3">
+                  <div style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '0.25rem',
+                    marginBottom: '0.75rem'
+                  }}>
                     {test.tags.map(tag => (
                       <span
                         key={tag.id}
-                        className="px-2 py-1 rounded-full text-xs font-medium text-white"
-                        style={{ backgroundColor: tag.color }}
+                        style={{
+                          padding: '0.25rem 0.5rem',
+                          borderRadius: '9999px',
+                          fontSize: '0.75rem',
+                          fontWeight: '500',
+                          color: 'white',
+                          backgroundColor: tag.color
+                        }}
                       >
                         {tag.name}
                       </span>
@@ -107,28 +249,59 @@ const AdminPanel = ({ tests, tags, onAddTest, onUpdateTest, onDeleteTest, onLogo
                   </div>
                 )}
                 
-                <div className="flex gap-4 text-sm text-gray-500">
+                <div style={{
+                  display: 'flex',
+                  gap: '1rem',
+                  fontSize: '0.875rem',
+                  color: '#6b7280'
+                }}>
                   <span>Вопросов: {test.question_count}</span>
                   <span>Баллов: {test.max_score}</span>
-                  <span className={`px-2 py-1 rounded-full text-xs ${
-                    test.is_published 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-yellow-100 text-yellow-800'
-                  }`}>
+                  <span style={{
+                    padding: '0.25rem 0.5rem',
+                    borderRadius: '9999px',
+                    fontSize: '0.75rem',
+                    backgroundColor: test.is_published ? '#d1fae5' : '#fef3c7',
+                    color: test.is_published ? '#065f46' : '#92400e'
+                  }}>
                     {test.is_published ? 'Опубликован' : 'Черновик'}
                   </span>
                 </div>
               </div>
-              <div className="flex gap-2 ml-4">
+              <div style={{
+                display: 'flex',
+                gap: '0.5rem',
+                marginLeft: '1rem'
+              }}>
                 <button
                   onClick={() => handleEditTest(test)}
-                  className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition-colors"
+                  style={{
+                    backgroundColor: '#d97706',
+                    color: 'white',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '0.5rem',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseOver={(e) => e.target.style.backgroundColor = '#b45309'}
+                  onMouseOut={(e) => e.target.style.backgroundColor = '#d97706'}
                 >
                   Редактировать
                 </button>
                 <button
                   onClick={() => handleDeleteTest(test.id)}
-                  className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
+                  style={{
+                    backgroundColor: '#dc2626',
+                    color: 'white',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '0.5rem',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseOver={(e) => e.target.style.backgroundColor = '#b91c1c'}
+                  onMouseOut={(e) => e.target.style.backgroundColor = '#dc2626'}
                 >
                   Удалить
                 </button>
@@ -136,27 +309,61 @@ const AdminPanel = ({ tests, tags, onAddTest, onUpdateTest, onDeleteTest, onLogo
             </div>
           ))}
           {tests.length === 0 && (
-            <div className="p-8 text-center text-gray-500">
-              <div className="text-4xl mb-3">📝</div>
-              <p className="text-lg">Тесты еще не созданы</p>
-              <p className="text-sm mt-1">Создайте первый тест, нажав кнопку выше</p>
+            <div style={{
+              padding: '2rem',
+              textAlign: 'center',
+              color: '#6b7280'
+            }}>
+              <div style={{
+                fontSize: '2.5rem',
+                marginBottom: '0.75rem'
+              }}>📝</div>
+              <p style={{
+                fontSize: '1.125rem',
+                marginBottom: '0.25rem'
+              }}>Тесты еще не созданы</p>
+              <p style={{
+                fontSize: '0.875rem'
+              }}>Создайте первый тест, нажав кнопку выше</p>
             </div>
           )}
         </div>
       </div>
 
       {/* Список тегов */}
-      <div className="bg-white rounded-lg shadow border">
-        <div className="p-6 border-b">
-          <h3 className="text-xl font-semibold text-gray-800">Доступные теги</h3>
+      <div style={{
+        backgroundColor: 'white',
+        borderRadius: '0.75rem',
+        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+        border: '1px solid #e5e7eb'
+      }}>
+        <div style={{
+          padding: '1.5rem',
+          borderBottom: '1px solid #e5e7eb'
+        }}>
+          <h3 style={{
+            fontSize: '1.25rem',
+            fontWeight: '600',
+            color: '#1f2937'
+          }}>Доступные теги</h3>
         </div>
-        <div className="p-6">
-          <div className="flex flex-wrap gap-2">
+        <div style={{ padding: '1.5rem' }}>
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '0.5rem'
+          }}>
             {tags.map(tag => (
               <span
                 key={tag.id}
-                className="px-3 py-2 rounded-full text-sm font-medium text-white"
-                style={{ backgroundColor: tag.color }}
+                style={{
+                  padding: '0.5rem 0.75rem',
+                  borderRadius: '9999px',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  color: 'white',
+                  backgroundColor: tag.color
+                }}
               >
                 {tag.name}
               </span>
@@ -168,22 +375,65 @@ const AdminPanel = ({ tests, tags, onAddTest, onUpdateTest, onDeleteTest, onLogo
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div style={{
+      minHeight: '100vh',
+      backgroundColor: '#f9fafb'
+    }}>
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
+      <header style={{
+        backgroundColor: 'white',
+        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+        borderBottom: '1px solid #e5e7eb'
+      }}>
+        <div style={{
+          maxWidth: '80rem',
+          margin: '0 auto',
+          padding: '0 1rem'
+        }}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '1rem 0'
+          }}>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Административная панель</h1>
-              <p className="text-gray-600">Добро пожаловать, {user?.full_name}</p>
+              <h1 style={{
+                fontSize: '1.5rem',
+                fontWeight: 'bold',
+                color: '#111827'
+              }}>Административная панель</h1>
+              <p style={{
+                color: '#6b7280'
+              }}>Добро пожаловать, {user?.full_name}</p>
             </div>
-            <div className="flex items-center gap-4">
-              <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1rem'
+            }}>
+              <span style={{
+                backgroundColor: '#d1fae5',
+                color: '#065f46',
+                padding: '0.25rem 0.75rem',
+                borderRadius: '9999px',
+                fontSize: '0.875rem',
+                fontWeight: '500'
+              }}>
                 Администратор
               </span>
               <button
                 onClick={onLogout}
-                className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+                style={{
+                  backgroundColor: '#6b7280',
+                  color: 'white',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '0.5rem',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseOver={(e) => e.target.style.backgroundColor = '#4b5563'}
+                onMouseOut={(e) => e.target.style.backgroundColor = '#6b7280'}
               >
                 Выйти
               </button>
@@ -193,7 +443,11 @@ const AdminPanel = ({ tests, tags, onAddTest, onUpdateTest, onDeleteTest, onLogo
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main style={{
+        maxWidth: '80rem',
+        margin: '0 auto',
+        padding: '2rem 1rem'
+      }}>
         {currentView === 'dashboard' && renderDashboard()}
         {(currentView === 'create' || currentView === 'edit') && (
           <TestEditor
