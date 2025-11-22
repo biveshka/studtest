@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation, Link } from 'react-router-dom';
-import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
@@ -18,8 +17,11 @@ const Results = () => {
 
   const fetchResults = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/results/${testId}`);
-      setResults(response.data);
+      const response = await fetch(`${API_BASE_URL}/results/${testId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setResults(data);
+      }
     } catch (error) {
       console.error('Error fetching results:', error);
     } finally {
@@ -43,7 +45,7 @@ const Results = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto p-6">
       {currentResult && (
         <div className="bg-white rounded-lg shadow-lg p-8 mb-8 text-center">
           <h2 className="text-3xl font-bold text-gray-800 mb-4">
@@ -96,7 +98,7 @@ const Results = () => {
 
       <div className="text-center mt-8">
         <Link
-          to="/"
+          to="/user"
           className="inline-block bg-blue-600 text-white py-3 px-8 rounded-lg hover:bg-blue-700 transition-colors"
         >
           Вернуться к списку тестов

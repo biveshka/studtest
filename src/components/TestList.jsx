@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
@@ -14,8 +13,11 @@ const TestList = () => {
 
   const fetchTests = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/tests`);
-      setTests(response.data);
+      const response = await fetch(`${API_BASE_URL}/tests`);
+      if (response.ok) {
+        const data = await response.json();
+        setTests(data);
+      }
     } catch (error) {
       console.error('Error fetching tests:', error);
     } finally {
@@ -32,7 +34,7 @@ const TestList = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto p-6">
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {tests.map((test) => (
           <div

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
@@ -13,6 +12,7 @@ const Test = () => {
   const [userName, setUserName] = useState('');
   const [showNameModal, setShowNameModal] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     fetchTest();
@@ -20,10 +20,15 @@ const Test = () => {
 
   const fetchTest = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/tests/${id}`);
-      setTest(response.data);
+      const response = await fetch(`${API_BASE_URL}/tests/${id}`);
+      if (!response.ok) {
+        throw new Error('Тест не найден');
+      }
+      const data = await response.json();
+      setTest(data);
     } catch (error) {
       console.error('Error fetching test:', error);
+      setError('Ошибка загрузки теста');
     } finally {
       setLoading(false);
     }
@@ -69,16 +74,26 @@ const Test = () => {
     const maxScore = test.questions.reduce((sum, q) => sum + q.points, 0);
 
     try {
-      await axios.post(`${API_BASE_URL}/results`, {
-        test_id: test.id,
-        user_name: userName,
-        score,
-        max_score: maxScore,
-        answers: Object.entries(answers).map(([questionId, answerIndex]) => ({
-          question_id: questionId,
-          answer_index: answerIndex
-        }))
+      const response = await fetch(`${API_BASE_URL}/results`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          test_id: test.id,
+          user_name: userName,
+          score,
+          max_score: maxScore,
+          answers: Object.entries(answers).map(([questionId, answerIndex]) => ({
+            question_id: questionId,
+            answer_index: answerIndex
+          }))
+        })
       });
+
+      if (!response.ok) {
+        throw new Error('Ошибка при сохранении результатов');
+      }
 
       navigate(`/results/${test.id}`, {
         state: { score, maxScore, userName }
@@ -97,10 +112,30 @@ const Test = () => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-red-500 text-lg">{error}</p>
+        <button 
+          onClick={() => navigate('/user')}
+          className="mt-4 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
+        >
+          Вернуться к тестам
+        </button>
+      </div>
+    );
+  }
+
   if (!test) {
     return (
       <div className="text-center py-12">
         <p className="text-red-500 text-lg">Тест не найден</p>
+        <button 
+          onClick={() => navigate('/user')}
+          className="mt-4 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
+        >
+          Вернуться к тестам
+        </button>
       </div>
     );
   }
