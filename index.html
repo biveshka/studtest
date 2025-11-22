@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Система тестирования</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .screen { display: none; }
         .screen.active { display: block; }
@@ -16,6 +17,9 @@
         .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .fade-in { animation: fadeIn 0.3s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .tag { transition: all 0.3s ease; }
+        .admin-only { display: none; }
+        .admin-mode .admin-only { display: block; }
     </style>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -25,315 +29,227 @@
                 Система тестирования
             </h1>
             <p class="text-lg text-gray-600">
-                Простая версия - работает сразу!
+                Простая версия с админ-панелью
             </p>
+            
+            <!-- Переключение режима -->
+            <div class="mt-6 flex justify-center gap-4">
+                <button id="user-mode-btn" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                    Режим ученика
+                </button>
+                <button id="admin-mode-btn" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                    Режим администратора
+                </button>
+            </div>
         </header>
 
-        <div id="app" class="max-w-4xl mx-auto">
-            <!-- Экран списка тестов -->
-            <div id="test-list-screen" class="screen active">
-                <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3" id="tests-container">
+        <!-- Экран входа администратора -->
+        <div id="admin-login-screen" class="screen hidden">
+            <div class="max-w-md mx-auto bg-white rounded-lg shadow-lg p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Вход для администратора</h2>
+                <form id="admin-login-form">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <input type="email" id="admin-email" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="admin@test.ru" required>
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Пароль</label>
+                        <input type="password" id="admin-password" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Пароль" required>
+                    </div>
+                    <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold">
+                        Войти
+                    </button>
+                </form>
+                <div class="mt-4 p-4 bg-gray-50 rounded-lg">
+                    <p class="text-sm text-gray-600 text-center">Демо доступ: admin@test.ru / admin123</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Основной интерфейс -->
+        <div id="main-app" class="screen active">
+            <!-- Панель администратора -->
+            <div id="admin-panel" class="admin-only hidden">
+                <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">Панель управления</h2>
+                        <div class="flex gap-4">
+                            <button id="create-test-btn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                                + Создать тест
+                            </button>
+                            <button id="view-results-btn" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                                Просмотреть результаты
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Статистика -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <p class="text-sm text-blue-600">Всего тестов</p>
+                            <p id="total-tests" class="text-2xl font-bold text-blue-800">0</p>
+                        </div>
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <p class="text-sm text-green-600">Опубликовано</p>
+                            <p id="published-tests" class="text-2xl font-bold text-green-800">0</p>
+                        </div>
+                        <div class="bg-purple-50 p-4 rounded-lg">
+                            <p class="text-sm text-purple-600">Всего вопросов</p>
+                            <p id="total-questions" class="text-2xl font-bold text-purple-800">0</p>
+                        </div>
+                        <div class="bg-orange-50 p-4 rounded-lg">
+                            <p class="text-sm text-orange-600">Пройдено тестов</p>
+                            <p id="completed-tests" class="text-2xl font-bold text-orange-800">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Список тестов для админа -->
+                <div id="admin-tests-container" class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                     <!-- Тесты будут загружены здесь -->
                 </div>
             </div>
 
-            <!-- Экран теста -->
-            <div id="test-screen" class="screen hidden">
-                <div class="bg-white rounded-lg shadow-lg p-6">
-                    <div class="mb-6">
-                        <div class="flex justify-between items-center mb-2">
-                            <span id="progress-text" class="text-sm text-gray-600">Вопрос 1 из 3</span>
-                            <span id="points-text" class="text-sm font-semibold text-blue-600">2 балла</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div id="progress-bar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
-                        </div>
+            <!-- Интерфейс пользователя -->
+            <div id="user-interface">
+                <!-- Фильтр по тегам -->
+                <div class="mb-8 bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Фильтр по тегам:</h3>
+                    <div id="tags-container" class="flex flex-wrap gap-2">
+                        <!-- Теги будут загружены здесь -->
                     </div>
+                </div>
 
-                    <div class="mb-6">
-                        <h2 id="question-text" class="text-xl font-semibold text-gray-800 mb-4"></h2>
-                        <div id="answers-container" class="space-y-3"></div>
-                    </div>
-
-                    <div class="flex justify-between">
-                        <button id="prev-btn" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50" disabled>Назад</button>
-                        <button id="next-btn" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">Далее</button>
-                        <button id="submit-btn" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors hidden">Завершить</button>
+                <!-- Список тестов -->
+                <div id="test-list-screen" class="screen active">
+                    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3" id="tests-container">
+                        <!-- Тесты будут загружены здесь -->
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Экран результатов -->
-            <div id="results-screen" class="screen hidden">
-                <div class="bg-white rounded-lg shadow-lg p-8 mb-8 text-center">
-                    <h2 class="text-3xl font-bold text-gray-800 mb-4">Тест завершен!</h2>
-                    <div id="score-display" class="text-5xl font-bold mb-4 text-green-600">0 / 0</div>
-                    <p id="user-greeting" class="text-lg text-gray-600 mb-2"></p>
-                    <p class="text-gray-500">Спасибо за прохождение теста!</p>
+        <!-- Экран теста -->
+        <div id="test-screen" class="screen hidden">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div class="mb-6">
+                    <div class="flex justify-between items-center mb-2">
+                        <span id="progress-text" class="text-sm text-gray-600">Вопрос 1 из 3</span>
+                        <span id="points-text" class="text-sm font-semibold text-blue-600">2 балла</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div id="progress-bar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
                 </div>
-                <div class="text-center">
-                    <button id="back-to-tests-btn" class="bg-blue-600 text-white py-3 px-8 rounded-lg hover:bg-blue-700 transition-colors">
-                        Вернуться к тестам
+
+                <div class="mb-6">
+                    <h2 id="question-text" class="text-xl font-semibold text-gray-800 mb-4"></h2>
+                    <div id="answers-container" class="space-y-3"></div>
+                </div>
+
+                <div class="flex justify-between">
+                    <button id="prev-btn" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50" disabled>Назад</button>
+                    <button id="next-btn" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">Далее</button>
+                    <button id="submit-btn" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors hidden">Завершить</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Экран результатов -->
+        <div id="results-screen" class="screen hidden">
+            <div class="bg-white rounded-lg shadow-lg p-8 mb-8 text-center">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">Тест завершен!</h2>
+                <div id="score-display" class="text-5xl font-bold mb-4 text-green-600">0 / 0</div>
+                <p id="user-greeting" class="text-lg text-gray-600 mb-2"></p>
+                <p class="text-gray-500">Спасибо за прохождение теста!</p>
+            </div>
+            <div class="text-center">
+                <button id="back-to-tests-btn" class="bg-blue-600 text-white py-3 px-8 rounded-lg hover:bg-blue-700 transition-colors">
+                    Вернуться к тестам
+                </button>
+            </div>
+        </div>
+
+        <!-- Модальное окно для имени -->
+        <div id="name-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
+            <div class="bg-white rounded-lg p-6 max-w-md w-full">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800">Введите ваше имя</h2>
+                <input type="text" id="user-name" class="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ваше имя">
+                <button id="start-test-btn" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors">
+                    Начать тест
+                </button>
+            </div>
+        </div>
+
+        <!-- Модальное окно редактора теста -->
+        <div id="test-editor-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden overflow-y-auto">
+            <div class="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <h2 class="text-2xl font-bold mb-6 text-gray-800" id="editor-title">Создание теста</h2>
+                <form id="test-editor-form">
+                    <div class="space-y-6">
+                        <!-- Основная информация -->
+                        <div>
+                            <h3 class="text-lg font-semibold mb-4">Основная информация</h3>
+                            <div class="grid gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Название теста</label>
+                                    <input type="text" id="test-title" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Описание</label>
+                                    <textarea id="test-description" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Теги</label>
+                                    <div id="editor-tags-container" class="flex flex-wrap gap-2 mb-2">
+                                        <!-- Теги для редактора -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Вопросы -->
+                        <div>
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-semibold">Вопросы</h3>
+                                <button type="button" id="add-question-btn" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                                    + Добавить вопрос
+                                </button>
+                            </div>
+                            <div id="questions-container">
+                                <!-- Вопросы будут добавляться здесь -->
+                            </div>
+                        </div>
+
+                        <div class="flex gap-4 pt-6 border-t">
+                            <button type="submit" class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold">
+                                Сохранить тест
+                            </button>
+                            <button type="button" id="cancel-edit-btn" class="bg-gray-500 text-white px-8 py-3 rounded-lg hover:bg-gray-600 transition-colors">
+                                Отмена
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Модальное окно результатов -->
+        <div id="results-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
+            <div class="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <h2 class="text-2xl font-bold mb-6 text-gray-800">Результаты тестов</h2>
+                <div id="results-container">
+                    <!-- Результаты будут загружены здесь -->
+                </div>
+                <div class="mt-6 text-center">
+                    <button id="close-results-btn" class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition-colors">
+                        Закрыть
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
-        // Вставьте сюда содержимое файла script.js
-        // Демо данные для тестов
-        const DEMO_TESTS = [
-            {
-                id: 1,
-                title: "Тест по JavaScript",
-                description: "Проверьте свои знания JavaScript",
-                question_count: 3,
-                max_score: 6,
-                questions: [
-                    {
-                        id: 101,
-                        question_text: "Что такое closure в JavaScript?",
-                        options: ["Функция внутри функции", "Область видимости функции", "Замыкание", "Все варианты"],
-                        correct_answer: 2,
-                        points: 2
-                    },
-                    {
-                        id: 102,
-                        question_text: "Какой метод используется для создания элемента React?",
-                        options: ["React.createElement()", "React.newElement()", "React.makeElement()", "React.element()"],
-                        correct_answer: 0,
-                        points: 2
-                    },
-                    {
-                        id: 103,
-                        question_text: "Что возвращает функция useState в React?",
-                        options: ["Только значение", "Только функцию обновления", "Массив [значение, функция]", "Объект с значением и функцией"],
-                        correct_answer: 2,
-                        points: 2
-                    }
-                ]
-            },
-            {
-                id: 2,
-                title: "Тест по HTML/CSS",
-                description: "Основы веб-разработки",
-                question_count: 2,
-                max_score: 4,
-                questions: [
-                    {
-                        id: 201,
-                        question_text: "Что означает CSS?",
-                        options: ["Computer Style Sheets", "Creative Style System", "Cascading Style Sheets", "Colorful Style Sheets"],
-                        correct_answer: 2,
-                        points: 2
-                    },
-                    {
-                        id: 202,
-                        question_text: "Какой тег используется для создания ссылки?",
-                        options: ["<link>", "<a>", "<href>", "<url>"],
-                        correct_answer: 1,
-                        points: 2
-                    }
-                ]
-            }
-        ];
-
-        class SimpleQuizApp {
-            constructor() {
-                this.tests = DEMO_TESTS;
-                this.currentTest = null;
-                this.currentQuestionIndex = 0;
-                this.userAnswers = {};
-                
-                this.initializeElements();
-                this.attachEventListeners();
-                this.showTestList();
-            }
-
-            initializeElements() {
-                this.screens = {
-                    testList: document.getElementById('test-list-screen'),
-                    test: document.getElementById('test-screen'),
-                    results: document.getElementById('results-screen')
-                };
-
-                this.testsContainer = document.getElementById('tests-container');
-                this.progressText = document.getElementById('progress-text');
-                this.pointsText = document.getElementById('points-text');
-                this.progressBar = document.getElementById('progress-bar');
-                this.questionText = document.getElementById('question-text');
-                this.answersContainer = document.getElementById('answers-container');
-                this.prevBtn = document.getElementById('prev-btn');
-                this.nextBtn = document.getElementById('next-btn');
-                this.submitBtn = document.getElementById('submit-btn');
-                this.scoreDisplay = document.getElementById('score-display');
-                this.userGreeting = document.getElementById('user-greeting');
-                this.backToTestsBtn = document.getElementById('back-to-tests-btn');
-            }
-
-            attachEventListeners() {
-                this.prevBtn.addEventListener('click', () => this.previousQuestion());
-                this.nextBtn.addEventListener('click', () => this.nextQuestion());
-                this.submitBtn.addEventListener('click', () => this.submitTest());
-                this.backToTestsBtn.addEventListener('click', () => this.showTestList());
-            }
-
-            showScreen(screenName) {
-                Object.values(this.screens).forEach(screen => {
-                    screen.classList.remove('active');
-                    screen.classList.add('hidden');
-                });
-
-                const targetScreen = this.screens[screenName];
-                if (targetScreen) {
-                    targetScreen.classList.add('active');
-                    targetScreen.classList.remove('hidden');
-                    targetScreen.classList.add('fade-in');
-                }
-            }
-
-            showTestList() {
-                this.showScreen('testList');
-                this.renderTests();
-            }
-
-            renderTests() {
-                this.testsContainer.innerHTML = this.tests.map(test => `
-                    <div class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow duration-300 test-card">
-                        <h3 class="text-xl font-semibold text-gray-800 mb-3">${test.title}</h3>
-                        <p class="text-gray-600 mb-4 line-clamp-2">${test.description}</p>
-                        <div class="flex justify-between items-center mb-4">
-                            <span class="text-sm text-gray-500">Вопросов: ${test.question_count}</span>
-                            <span class="text-sm text-gray-500">Баллов: ${test.max_score}</span>
-                        </div>
-                        <button 
-                            class="test-start-btn w-full bg-blue-600 text-white text-center py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200" 
-                            data-test-id="${test.id}"
-                        >
-                            Начать тест
-                        </button>
-                    </div>
-                `).join('');
-
-                document.querySelectorAll('.test-start-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const testId = parseInt(e.target.dataset.testId);
-                        this.startTest(testId);
-                    });
-                });
-            }
-
-            startTest(testId) {
-                this.currentTest = this.tests.find(test => test.id === testId);
-                this.currentQuestionIndex = 0;
-                this.userAnswers = {};
-                this.showTestQuestion();
-            }
-
-            showTestQuestion() {
-                this.showScreen('test');
-                const question = this.currentTest.questions[this.currentQuestionIndex];
-                
-                const progress = ((this.currentQuestionIndex + 1) / this.currentTest.questions.length) * 100;
-                this.progressText.textContent = `Вопрос ${this.currentQuestionIndex + 1} из ${this.currentTest.questions.length}`;
-                this.pointsText.textContent = `${question.points} баллов`;
-                this.progressBar.style.width = `${progress}%`;
-                
-                this.questionText.textContent = question.question_text;
-                
-                this.answersContainer.innerHTML = question.options.map((option, index) => `
-                    <div class="answer-option w-full text-left p-4 rounded-lg border-2 transition-all duration-200 ${
-                        this.userAnswers[question.id] === index 
-                            ? 'border-blue-500 bg-blue-50 text-blue-700 selected' 
-                            : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                    }" data-question-id="${question.id}" data-answer-index="${index}">
-                        ${option}
-                    </div>
-                `).join('');
-
-                this.answersContainer.querySelectorAll('.answer-option').forEach(option => {
-                    option.addEventListener('click', (e) => {
-                        const questionId = parseInt(e.currentTarget.dataset.questionId);
-                        const answerIndex = parseInt(e.currentTarget.dataset.answerIndex);
-                        this.selectAnswer(questionId, answerIndex);
-                    });
-                });
-
-                this.prevBtn.disabled = this.currentQuestionIndex === 0;
-                
-                if (this.currentQuestionIndex === this.currentTest.questions.length - 1) {
-                    this.nextBtn.classList.add('hidden');
-                    this.submitBtn.classList.remove('hidden');
-                } else {
-                    this.nextBtn.classList.remove('hidden');
-                    this.submitBtn.classList.add('hidden');
-                }
-            }
-
-            selectAnswer(questionId, answerIndex) {
-                this.userAnswers[questionId] = answerIndex;
-                
-                this.answersContainer.querySelectorAll('.answer-option').forEach(option => {
-                    const optionQuestionId = parseInt(option.dataset.questionId);
-                    const optionAnswerIndex = parseInt(option.dataset.answerIndex);
-                    
-                    if (optionQuestionId === questionId) {
-                        if (optionAnswerIndex === answerIndex) {
-                            option.classList.add('selected');
-                        } else {
-                            option.classList.remove('selected');
-                        }
-                    }
-                });
-            }
-
-            previousQuestion() {
-                if (this.currentQuestionIndex > 0) {
-                    this.currentQuestionIndex--;
-                    this.showTestQuestion();
-                }
-            }
-
-            nextQuestion() {
-                if (this.currentQuestionIndex < this.currentTest.questions.length - 1) {
-                    this.currentQuestionIndex++;
-                    this.showTestQuestion();
-                }
-            }
-
-            calculateScore() {
-                let score = 0;
-                this.currentTest.questions.forEach(question => {
-                    const userAnswer = this.userAnswers[question.id];
-                    if (userAnswer !== undefined && question.correct_answer === userAnswer) {
-                        score += question.points;
-                    }
-                });
-                return score;
-            }
-
-            submitTest() {
-                const score = this.calculateScore();
-                const maxScore = this.currentTest.max_score;
-                const percentage = Math.round((score / maxScore) * 100);
-
-                let scoreColor = 'text-red-600';
-                if (percentage >= 80) scoreColor = 'text-green-600';
-                else if (percentage >= 60) scoreColor = 'text-yellow-600';
-
-                this.scoreDisplay.textContent = `${score} / ${maxScore}`;
-                this.scoreDisplay.className = `text-5xl font-bold mb-4 ${scoreColor}`;
-                this.userGreeting.textContent = `Ваш результат: ${percentage}%`;
-
-                this.showScreen('results');
-            }
-        }
-
-        // Запуск приложения
-        document.addEventListener('DOMContentLoaded', () => {
-            new SimpleQuizApp();
-        });
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
