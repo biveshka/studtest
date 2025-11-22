@@ -1,24 +1,14 @@
 import React, { useState } from 'react';
-import TestReviews from './TestReviews';
+import { resultsAPI } from '../services/api';
 
-const UserInterface = ({ tests, tags, selectedTag, onTagFilter, onAddReview, onBackToRoleSelection }) => {
+const UserInterface = ({ tests, onBackToRoleSelection, loading }) => {
   const [currentScreen, setCurrentScreen] = useState('testList');
   const [currentTest, setCurrentTest] = useState(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState({});
   const [userName, setUserName] = useState('');
   const [showNameModal, setShowNameModal] = useState(false);
-  const [showReviews, setShowReviews] = useState(false);
-
-  const resetTest = () => {
-    setCurrentTest(null);
-    setCurrentQuestionIndex(0);
-    setUserAnswers({});
-    setUserName('');
-    setShowNameModal(false);
-    setCurrentScreen('testList');
-    setShowReviews(false);
-  };
+  const [saving, setSaving] = useState(false);
 
   const startTest = (test) => {
     setCurrentTest(test);
@@ -64,14 +54,30 @@ const UserInterface = ({ tests, tags, selectedTag, onTagFilter, onAddReview, onB
     return score;
   };
 
-  const finishTest = () => {
-    const score = calculateScore();
-    const maxScore = currentTest.max_score;
-    
-    // В реальном приложении здесь будет сохранение в базу
-    console.log('Результат теста:', { userName, score, maxScore, testId: currentTest.id });
-    
-    setCurrentScreen('results');
+  const finishTest = async () => {
+    try {
+      setSaving(true);
+      const score = calculateScore();
+      const maxScore = currentTest.max_score;
+      
+      // Сохраняем результат в Supabase
+      await resultsAPI.saveResult({
+        test_id: currentTest.id,
+        user_name: userName,
+        score: score,
+        max_score: maxScore,
+        answers: Object.entries(userAnswers).map(([questionId, answerIndex]) => ({
+          question_id: questionId,
+          answer_index: answerIndex
+        }))
+      });
+
+      setCurrentScreen('results');
+    } catch (error) {
+      alert('Ошибка сохранения результата: ' + error.message);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const getScoreColor = (score, maxScore) => {
