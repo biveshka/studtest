@@ -79,7 +79,6 @@ const TestEditor = ({ test, tags, onSave, onCancel, mode }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    // Валидация
     if (!formData.title.trim()) {
       alert('Введите название теста');
       return;
@@ -99,77 +98,175 @@ const TestEditor = ({ test, tags, onSave, onCancel, mode }) => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="bg-white rounded-lg shadow border p-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">
+    <div style={{
+      maxWidth: '56rem',
+      margin: '0 auto'
+    }}>
+      <div style={{
+        backgroundColor: 'white',
+        borderRadius: '0.75rem',
+        boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+        border: '1px solid #e5e7eb',
+        padding: '2rem'
+      }}>
+        <h2 style={{
+          fontSize: '1.5rem',
+          fontWeight: 'bold',
+          color: '#1f2937',
+          marginBottom: '1.5rem',
+          paddingBottom: '1rem',
+          borderBottom: '2px solid #f3f4f6'
+        }}>
           {mode === 'create' ? 'Создание теста' : 'Редактирование теста'}
         </h2>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit} style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '2rem'
+        }}>
           {/* Основная информация о тесте */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-800">Основная информация</h3>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1rem'
+          }}>
+            <h3 style={{
+              fontSize: '1.125rem',
+              fontWeight: '600',
+              color: '#1f2937'
+            }}>Основная информация</h3>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label style={{
+                display: 'block',
+                fontSize: '0.875rem',
+                fontWeight: '500',
+                color: '#374151',
+                marginBottom: '0.5rem'
+              }}>
                 Название теста *
               </label>
               <input
                 type="text"
                 value={formData.title}
                 onChange={(e) => setFormData(prev => ({...prev, title: e.target.value}))}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '0.5rem',
+                  fontSize: '1rem',
+                  transition: 'border-color 0.2s'
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#2563eb'}
+                onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
                 placeholder="Введите название теста"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label style={{
+                display: 'block',
+                fontSize: '0.875rem',
+                fontWeight: '500',
+                color: '#374151',
+                marginBottom: '0.5rem'
+              }}>
                 Описание теста
               </label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData(prev => ({...prev, description: e.target.value}))}
                 rows="3"
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '0.5rem',
+                  fontSize: '1rem',
+                  resize: 'vertical',
+                  transition: 'border-color 0.2s'
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#2563eb'}
+                onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
                 placeholder="Введите описание теста"
               />
             </div>
 
-            <div className="flex items-center">
+            <div style={{
+              display: 'flex',
+              alignItems: 'center'
+            }}>
               <input
                 type="checkbox"
                 id="is_published"
                 checked={formData.is_published}
                 onChange={(e) => setFormData(prev => ({...prev, is_published: e.target.checked}))}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                style={{
+                  height: '1rem',
+                  width: '1rem',
+                  color: '#2563eb',
+                  borderColor: '#d1d5db',
+                  borderRadius: '0.25rem'
+                }}
               />
-              <label htmlFor="is_published" className="ml-2 block text-sm text-gray-700">
+              <label htmlFor="is_published" style={{
+                marginLeft: '0.5rem',
+                fontSize: '0.875rem',
+                color: '#374151'
+              }}>
                 Опубликовать тест (сделать доступным для прохождения)
               </label>
             </div>
           </div>
 
           {/* Секция тегов */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-800">Теги теста</h3>
-            <p className="text-sm text-gray-600">Выберите теги для категоризации теста</p>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1rem'
+          }}>
+            <h3 style={{
+              fontSize: '1.125rem',
+              fontWeight: '600',
+              color: '#1f2937'
+            }}>Теги теста</h3>
+            <p style={{
+              fontSize: '0.875rem',
+              color: '#6b7280'
+            }}>Выберите теги для категоризации теста</p>
             
-            <div className="flex flex-wrap gap-2">
+            <div style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '0.5rem'
+            }}>
               {tags.map(tag => (
                 <button
                   key={tag.id}
                   type="button"
                   onClick={() => toggleTag(tag)}
-                  className={`px-3 py-2 rounded-full text-sm font-medium transition-colors ${
-                    formData.selectedTags.some(t => t.id === tag.id)
-                      ? 'text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
                   style={{
-                    backgroundColor: formData.selectedTags.some(t => t.id === tag.id) 
-                      ? tag.color 
-                      : undefined
+                    padding: '0.5rem 0.75rem',
+                    borderRadius: '9999px',
+                    fontSize: '0.875rem',
+                    fontWeight: '500',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    backgroundColor: formData.selectedTags.some(t => t.id === tag.id) ? tag.color : '#f3f4f6',
+                    color: formData.selectedTags.some(t => t.id === tag.id) ? 'white' : '#374151'
+                  }}
+                  onMouseOver={(e) => {
+                    if (!formData.selectedTags.some(t => t.id === tag.id)) {
+                      e.target.style.backgroundColor = '#e5e7eb';
+                    }
+                  }}
+                  onMouseOut={(e) => {
+                    if (!formData.selectedTags.some(t => t.id === tag.id)) {
+                      e.target.style.backgroundColor = '#f3f4f6';
+                    }
                   }}
                 >
                   {tag.name}
@@ -178,14 +275,28 @@ const TestEditor = ({ test, tags, onSave, onCancel, mode }) => {
             </div>
             
             {formData.selectedTags.length > 0 && (
-              <div className="mt-3">
-                <p className="text-sm text-gray-600 mb-2">Выбранные теги:</p>
-                <div className="flex flex-wrap gap-2">
+              <div style={{ marginTop: '0.75rem' }}>
+                <p style={{
+                  fontSize: '0.875rem',
+                  color: '#6b7280',
+                  marginBottom: '0.5rem'
+                }}>Выбранные теги:</p>
+                <div style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '0.5rem'
+                }}>
                   {formData.selectedTags.map(tag => (
                     <span
                       key={tag.id}
-                      className="px-3 py-1 rounded-full text-sm font-medium text-white"
-                      style={{ backgroundColor: tag.color }}
+                      style={{
+                        padding: '0.5rem 0.75rem',
+                        borderRadius: '9999px',
+                        fontSize: '0.875rem',
+                        fontWeight: '500',
+                        color: 'white',
+                        backgroundColor: tag.color
+                      }}
                     >
                       {tag.name} ×
                     </span>
@@ -196,49 +307,121 @@ const TestEditor = ({ test, tags, onSave, onCancel, mode }) => {
           </div>
 
           {/* Вопросы */}
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-gray-800">Вопросы</h3>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1.5rem'
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <h3 style={{
+                fontSize: '1.125rem',
+                fontWeight: '600',
+                color: '#1f2937'
+              }}>Вопросы</h3>
               <button
                 type="button"
                 onClick={addQuestion}
-                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                style={{
+                  backgroundColor: '#059669',
+                  color: 'white',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '0.5rem',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontWeight: '500',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseOver={(e) => e.target.style.backgroundColor = '#047857'}
+                onMouseOut={(e) => e.target.style.backgroundColor = '#059669'}
               >
                 + Добавить вопрос
               </button>
             </div>
 
             {formData.questions.map((question, questionIndex) => (
-              <div key={question.id} className="border border-gray-200 rounded-lg p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <h4 className="font-semibold text-gray-800">Вопрос {questionIndex + 1}</h4>
+              <div key={question.id} style={{
+                border: '1px solid #e5e7eb',
+                borderRadius: '0.75rem',
+                padding: '1.5rem',
+                backgroundColor: '#fafafa',
+                transition: 'all 0.2s ease'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start',
+                  marginBottom: '1rem'
+                }}>
+                  <h4 style={{
+                    fontWeight: '600',
+                    color: '#1f2937',
+                    fontSize: '1rem'
+                  }}>Вопрос {questionIndex + 1}</h4>
                   {formData.questions.length > 1 && (
                     <button
                       type="button"
                       onClick={() => removeQuestion(questionIndex)}
-                      className="text-red-600 hover:text-red-800 text-sm"
+                      style={{
+                        color: '#dc2626',
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: '0.875rem',
+                        transition: 'color 0.2s'
+                      }}
+                      onMouseOver={(e) => e.target.style.color = '#b91c1c'}
+                      onMouseOut={(e) => e.target.style.color = '#dc2626'}
                     >
                       Удалить вопрос
                     </button>
                   )}
                 </div>
 
-                <div className="space-y-4">
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1rem'
+                }}>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label style={{
+                      display: 'block',
+                      fontSize: '0.875rem',
+                      fontWeight: '500',
+                      color: '#374151',
+                      marginBottom: '0.5rem'
+                    }}>
                       Текст вопроса *
                     </label>
                     <input
                       type="text"
                       value={question.question_text}
                       onChange={(e) => updateQuestion(questionIndex, 'question_text', e.target.value)}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      style={{
+                        width: '100%',
+                        padding: '0.75rem',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '0.5rem',
+                        fontSize: '1rem',
+                        transition: 'border-color 0.2s'
+                      }}
+                      onFocus={(e) => e.target.style.borderColor = '#2563eb'}
+                      onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
                       placeholder="Введите текст вопроса"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label style={{
+                      display: 'block',
+                      fontSize: '0.875rem',
+                      fontWeight: '500',
+                      color: '#374151',
+                      marginBottom: '0.5rem'
+                    }}>
                       Баллы за вопрос
                     </label>
                     <input
@@ -246,35 +429,76 @@ const TestEditor = ({ test, tags, onSave, onCancel, mode }) => {
                       min="1"
                       value={question.points}
                       onChange={(e) => updateQuestion(questionIndex, 'points', parseInt(e.target.value) || 1)}
-                      className="w-32 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      style={{
+                        width: '6rem',
+                        padding: '0.75rem',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '0.5rem',
+                        fontSize: '1rem',
+                        transition: 'border-color 0.2s'
+                      }}
+                      onFocus={(e) => e.target.style.borderColor = '#2563eb'}
+                      onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">
+                    <label style={{
+                      display: 'block',
+                      fontSize: '0.875rem',
+                      fontWeight: '500',
+                      color: '#374151',
+                      marginBottom: '0.75rem'
+                    }}>
                       Варианты ответов *
                     </label>
-                    <div className="space-y-2">
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.5rem'
+                    }}>
                       {question.options.map((option, optionIndex) => (
-                        <div key={optionIndex} className="flex items-center gap-3">
+                        <div key={optionIndex} style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.75rem'
+                        }}>
                           <input
                             type="radio"
                             name={`correct-${questionIndex}`}
                             checked={question.correct_answer === optionIndex}
                             onChange={() => updateQuestion(questionIndex, 'correct_answer', optionIndex)}
-                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                            style={{
+                              height: '1rem',
+                              width: '1rem',
+                              color: '#2563eb',
+                              borderColor: '#d1d5db'
+                            }}
                           />
                           <input
                             type="text"
                             value={option}
                             onChange={(e) => updateOption(questionIndex, optionIndex, e.target.value)}
-                            className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            style={{
+                              flex: 1,
+                              padding: '0.75rem',
+                              border: '1px solid #d1d5db',
+                              borderRadius: '0.5rem',
+                              fontSize: '1rem',
+                              transition: 'border-color 0.2s'
+                            }}
+                            onFocus={(e) => e.target.style.borderColor = '#2563eb'}
+                            onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
                             placeholder={`Вариант ${optionIndex + 1}`}
                           />
                         </div>
                       ))}
                     </div>
-                    <p className="text-sm text-gray-500 mt-2">
+                    <p style={{
+                      fontSize: '0.75rem',
+                      color: '#6b7280',
+                      marginTop: '0.5rem'
+                    }}>
                       Отметьте правильный вариант ответа
                     </p>
                   </div>
@@ -284,17 +508,52 @@ const TestEditor = ({ test, tags, onSave, onCancel, mode }) => {
           </div>
 
           {/* Кнопки действий */}
-          <div className="flex gap-4 pt-6 border-t">
+          <div style={{
+            display: 'flex',
+            gap: '1rem',
+            paddingTop: '1.5rem',
+            borderTop: '2px solid #f3f4f6'
+          }}>
             <button
               type="submit"
-              className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+              style={{
+                backgroundColor: '#2563eb',
+                color: 'white',
+                padding: '0.75rem 2rem',
+                borderRadius: '0.5rem',
+                border: 'none',
+                cursor: 'pointer',
+                fontWeight: '600',
+                fontSize: '1rem',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseOver={(e) => {
+                e.target.style.backgroundColor = '#1d4ed8';
+                e.target.style.transform = 'translateY(-1px)';
+              }}
+              onMouseOut={(e) => {
+                e.target.style.backgroundColor = '#2563eb';
+                e.target.style.transform = 'translateY(0)';
+              }}
             >
               {mode === 'create' ? 'Создать тест' : 'Сохранить изменения'}
             </button>
             <button
               type="button"
               onClick={onCancel}
-              className="bg-gray-500 text-white px-8 py-3 rounded-lg hover:bg-gray-600 transition-colors"
+              style={{
+                backgroundColor: '#6b7280',
+                color: 'white',
+                padding: '0.75rem 2rem',
+                borderRadius: '0.5rem',
+                border: 'none',
+                cursor: 'pointer',
+                fontWeight: '500',
+                fontSize: '1rem',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseOver={(e) => e.target.style.backgroundColor = '#4b5563'}
+              onMouseOut={(e) => e.target.style.backgroundColor = '#6b7280'}
             >
               Отмена
             </button>
