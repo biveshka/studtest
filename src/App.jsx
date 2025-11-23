@@ -458,43 +458,50 @@ function App() {
 
   // Исправленная функция для сохранения результатов теста
   // Исправленная функция для сохранения результатов теста
-const handleSaveTestResult = (resultData) => {
-  console.log('📝 Получены данные для сохранения:', resultData);
-  
-  const maxScore = resultData.maxScore || resultData.max_score || 1;
-  const score = resultData.score || 0;
-  const percentage = Math.round((score / maxScore) * 100);
-  
-  const newResult = {
-    id: Date.now(),
-    testId: resultData.testId,
-    testTitle: resultData.testTitle,
-    userName: resultData.userName,
-    score: score,
-    maxScore: maxScore,
-    percentage: percentage,
-    completedAt: new Date().toISOString(),
-    answers: resultData.answers || []
-  };
-  
-  console.log('💾 Сохраняем результат:', newResult);
-  
-  setTestResults(prev => {
-    const updatedResults = [...prev, newResult];
-    console.log('✅ Все результаты после сохранения:', updatedResults);
+  const handleSaveTestResult = (resultData) => {
+    return new Promise((resolve) => {
+      console.log('🚀 Начало сохранения результата:', resultData);
     
-    // Сохраняем в localStorage сразу
-    localStorage.setItem('quizResults', JSON.stringify(updatedResults));
+      const maxScore = resultData.maxScore || resultData.max_score || 1;
+      const score = resultData.score || 0;
+      const percentage = Math.round((score / maxScore) * 100);
     
-    return updatedResults;
-  });
-  
-  // Переходим на страницу результатов
-  navigate(`/results/${resultData.testId}`);
-};
-
-  const handleTagFilter = (tag) => {
-    setSelectedTag(selectedTag?.id === tag.id ? null : tag);
+      const newResult = {
+        id: Date.now(),
+        testId: resultData.testId,
+        testTitle: resultData.testTitle,
+        userName: resultData.userName,
+        score: score,
+        maxScore: maxScore,
+        percentage: percentage,
+        completedAt: new Date().toISOString(),
+        answers: resultData.answers || []
+      };
+    
+      console.log('💾 Новый результат:', newResult);
+    
+      // Получаем текущие результаты
+      const currentResults = JSON.parse(localStorage.getItem('quizResults') || '[]');
+      console.log('📁 Текущие результаты:', currentResults);
+    
+      // Добавляем новый результат
+      const updatedResults = [...currentResults, newResult];
+      console.log('🔄 Обновленные результаты:', updatedResults);
+    
+      // Сохраняем в localStorage
+      localStorage.setItem('quizResults', JSON.stringify(updatedResults));
+      console.log('✅ Сохранено в localStorage');
+    
+      // Обновляем состояние
+      setTestResults(updatedResults);
+      console.log('✅ Состояние обновлено');
+    
+      // Переходим на страницу результатов
+      setTimeout(() => {
+        navigate(`/results/${resultData.testId}`);
+        resolve();
+      }, 100);
+    });
   };
 
   const filteredTests = selectedTag ? 
