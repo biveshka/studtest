@@ -4,6 +4,8 @@ const ResultsView = ({ tests, testResults, onBack }) => {
   const [selectedTest, setSelectedTest] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
+  console.log('ResultsView - полученные результаты:', testResults);
+
   const filteredResults = selectedTest 
     ? testResults.filter(result => result.testId === selectedTest.id)
     : testResults;
@@ -11,7 +13,7 @@ const ResultsView = ({ tests, testResults, onBack }) => {
   const searchedResults = searchTerm
     ? filteredResults.filter(result => 
         result.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        result.testTitle.toLowerCase().includes(searchTerm.toLowerCase())
+        (result.testTitle && result.testTitle.toLowerCase().includes(searchTerm.toLowerCase()))
       )
     : filteredResults;
 
@@ -21,16 +23,18 @@ const ResultsView = ({ tests, testResults, onBack }) => {
     return '#dc2626';
   };
 
+  // Исправленная функция статистики
   const getTestStats = (testId) => {
-    const testResults = testResults.filter(result => result.testId === testId);
-    if (testResults.length === 0) return null;
+    const resultsForTest = testResults.filter(result => result.testId === testId);
+    if (resultsForTest.length === 0) return null;
 
-    const avgScore = testResults.reduce((sum, result) => sum + result.percentage, 0) / testResults.length;
-    const bestResult = Math.max(...testResults.map(result => result.percentage));
-    const worstResult = Math.min(...testResults.map(result => result.percentage));
+    const percentages = resultsForTest.map(result => result.percentage);
+    const avgScore = percentages.reduce((sum, percentage) => sum + percentage, 0) / percentages.length;
+    const bestResult = Math.max(...percentages);
+    const worstResult = Math.min(...percentages);
 
     return {
-      totalAttempts: testResults.length,
+      totalAttempts: resultsForTest.length,
       averageScore: avgScore,
       bestScore: bestResult,
       worstScore: worstResult
@@ -62,7 +66,10 @@ const ResultsView = ({ tests, testResults, onBack }) => {
           }}>Фильтр по тесту:</span>
           <select
             value={selectedTest?.id || ''}
-            onChange={(e) => setSelectedTest(tests.find(t => t.id === parseInt(e.target.value)) || null)}
+            onChange={(e) => {
+              const testId = e.target.value;
+              setSelectedTest(testId ? tests.find(t => t.id === parseInt(testId)) : null);
+            }}
             style={{
               padding: '0.5rem',
               border: '1px solid #d1d5db',
@@ -173,7 +180,18 @@ const ResultsView = ({ tests, testResults, onBack }) => {
               </div>
             </div>
           </div>
-        ) : null;
+        ) : (
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '0.75rem',
+            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+            border: '1px solid #e5e7eb',
+            padding: '1.5rem',
+            textAlign: 'center'
+          }}>
+            <p style={{ color: '#6b7280' }}>Нет результатов для теста "{selectedTest.title}"</p>
+          </div>
+        );
       })()}
 
       {/* Список результатов */}
@@ -201,8 +219,8 @@ const ResultsView = ({ tests, testResults, onBack }) => {
           flexDirection: 'column'
         }}>
           {searchedResults.length > 0 ? (
-            searchedResults.map(result => (
-              <div key={result.id} style={{
+            searchedResults.map((result, index) => (
+              <div key={result.id || index} style={{
                 padding: '1.5rem',
                 borderBottom: '1px solid #f3f4f6',
                 display: 'flex',
@@ -225,11 +243,11 @@ const ResultsView = ({ tests, testResults, onBack }) => {
                         fontWeight: '600',
                         color: '#1f2937',
                         fontSize: '1.125rem'
-                      }}>{result.userName}</h4>
+                      }}>{result.userName || 'Неизвестный пользователь'}</h4>
                       <p style={{
                         color: '#6b7280',
                         fontSize: '0.875rem'
-                      }}>{result.testTitle}</p>
+                      }}>{result.testTitle || 'Тест без названия'}</p>
                     </div>
                     <div style={{
                       textAlign: 'right'
@@ -237,15 +255,15 @@ const ResultsView = ({ tests, testResults, onBack }) => {
                       <div style={{
                         fontSize: '1.5rem',
                         fontWeight: 'bold',
-                        color: getScoreColor(result.percentage)
+                        color: getScoreColor(result.percentage || 0)
                       }}>
-                        {result.score}/{result.maxScore}
+                        {result.score || 0}/{result.maxScore || 0}
                       </div>
                       <div style={{
                         fontSize: '0.875rem',
                         color: '#6b7280'
                       }}>
-                        {result.percentage}%
+                        {result.percentage || 0}%
                       </div>
                     </div>
                   </div>
@@ -259,13 +277,13 @@ const ResultsView = ({ tests, testResults, onBack }) => {
                       fontSize: '0.875rem',
                       color: '#6b7280'
                     }}>
-                      Завершено: {new Date(result.completedAt).toLocaleDateString('ru-RU', {
+                      Завершено: {result.completedAt ? new Date(result.completedAt).toLocaleDateString('ru-RU', {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric',
                         hour: '2-digit',
                         minute: '2-digit'
-                      })}
+                      }) : 'Дата неизвестна'}
                     </span>
                   </div>
                 </div>

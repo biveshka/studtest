@@ -5,12 +5,17 @@ const Results = ({ testResults, tests }) => {
   const { testId } = useParams();
   const navigate = useNavigate();
 
+  console.log('Results - полученные результаты:', testResults);
+  console.log('Results - testId:', testId);
+
   // Находим последний результат для этого теста
   const result = testResults
     .filter(r => r.testId === parseInt(testId))
     .sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt))[0];
 
   const test = tests.find(t => t.id === parseInt(testId));
+
+  console.log('Results - найденный результат:', result);
 
   if (!result) {
     return (
@@ -38,6 +43,12 @@ const Results = ({ testResults, tests }) => {
             color: '#1f2937',
             marginBottom: '1rem'
           }}>Результат не найден</h2>
+          <p style={{
+            color: '#6b7280',
+            marginBottom: '1.5rem'
+          }}>
+            Не удалось найти результаты теста. Возможно, произошла ошибка при сохранении.
+          </p>
           <button
             onClick={() => navigate('/user')}
             style={{
@@ -47,8 +58,11 @@ const Results = ({ testResults, tests }) => {
               borderRadius: '0.5rem',
               border: 'none',
               cursor: 'pointer',
-              fontSize: '1rem'
+              fontSize: '1rem',
+              transition: 'background-color 0.2s'
             }}
+            onMouseOver={(e) => e.target.style.backgroundColor = '#1d4ed8'}
+            onMouseOut={(e) => e.target.style.backgroundColor = '#2563eb'}
           >
             Вернуться к тестам
           </button>

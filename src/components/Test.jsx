@@ -66,6 +66,13 @@ const Test = ({ tests, onSaveResult }) => {
     const maxScore = test.max_score;
     const percentage = Math.round((score / maxScore) * 100);
 
+    console.log('Завершение теста:', {
+      testId: test.id,
+      score: score,
+      maxScore: maxScore,
+      percentage: percentage
+    });
+
     // Сохраняем результат
     onSaveResult({
       testId: test.id,

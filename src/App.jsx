@@ -412,6 +412,8 @@ function App() {
       completedAt: new Date().toISOString()
     };
     
+    console.log('Сохранение результата:', newResult);
+    
     setTestResults(prev => [...prev, newResult]);
     
     // Переходим на страницу результатов
