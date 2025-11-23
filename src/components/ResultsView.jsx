@@ -1,185 +1,430 @@
 import React, { useState } from 'react';
 
-const TestReviews = ({ test, onAddReview, onBack }) => {
-  const [showReviewForm, setShowReviewForm] = useState(false);
-  const [newReview, setNewReview] = useState({
-    rating: 5,
-    comment: ''
-  });
+const ResultsView = ({ tests, onBack }) => {
+  const [selectedTest, setSelectedTest] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
-  const handleSubmitReview = (e) => {
-    e.preventDefault();
-    
-    if (!newReview.comment.trim()) {
-      alert('Пожалуйста, напишите комментарий');
-      return;
+  // Демо данные результатов (в реальном приложении будут из базы данных)
+  const demoResults = [
+    {
+      id: 1,
+      testId: 1,
+      testTitle: "Тест по Python - Основы",
+      userName: "Стуков Артем",
+      score: 8,
+      maxScore: 10,
+      percentage: 80,
+      completedAt: "2024-01-15T14:30:00Z",
+      answers: [
+        { questionId: 1, userAnswer: 1, correctAnswer: 1, isCorrect: true },
+        { questionId: 2, userAnswer: 2, correctAnswer: 2, isCorrect: true },
+        { questionId: 3, userAnswer: 1, correctAnswer: 1, isCorrect: true },
+        { questionId: 4, userAnswer: 0, correctAnswer: 1, isCorrect: false }
+      ]
+    },
+    {
+      id: 2,
+      testId: 1,
+      testTitle: "Тест по Python - Основы",
+      userName: "Филиппов Александр",
+      score: 10,
+      maxScore: 10,
+      percentage: 100,
+      completedAt: "2024-01-15T16:45:00Z",
+      answers: [
+        { questionId: 1, userAnswer: 1, correctAnswer: 1, isCorrect: true },
+        { questionId: 2, userAnswer: 2, correctAnswer: 2, isCorrect: true },
+        { questionId: 3, userAnswer: 1, correctAnswer: 1, isCorrect: true },
+        { questionId: 4, userAnswer: 1, correctAnswer: 1, isCorrect: true }
+      ]
+    },
+    {
+      id: 3,
+      testId: 2,
+      testTitle: "Тест по JavaScript",
+      userName: "Алексей Козлов",
+      score: 12,
+      maxScore: 18,
+      percentage: 67,
+      completedAt: "2024-01-14T10:20:00Z",
+      answers: []
+    },
+    {
+      id: 4,
+      testId: 1,
+      testTitle: "Тест по Python - Основы",
+      userName: "Дмитрий Новиков",
+      score: 6,
+      maxScore: 10,
+      percentage: 60,
+      completedAt: "2024-01-16T09:15:00Z",
+      answers: []
     }
+  ];
 
-    onAddReview(newReview);
-    setShowReviewForm(false);
-    setNewReview({ rating: 5, comment: '' });
+  const filteredResults = selectedTest 
+    ? demoResults.filter(result => result.testId === selectedTest.id)
+    : demoResults;
+
+  const searchedResults = searchTerm
+    ? filteredResults.filter(result => 
+        result.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        result.testTitle.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : filteredResults;
+
+  const getScoreColor = (percentage) => {
+    if (percentage >= 80) return '#059669'; // green
+    if (percentage >= 60) return '#d97706'; // yellow
+    return '#dc2626'; // red
   };
 
-  const approvedReviews = test.reviews?.filter(review => review.is_approved) || [];
+  const getTestStats = (testId) => {
+    const testResults = demoResults.filter(result => result.testId === testId);
+    if (testResults.length === 0) return null;
+
+    const avgScore = testResults.reduce((sum, result) => sum + result.percentage, 0) / testResults.length;
+    const bestResult = Math.max(...testResults.map(result => result.percentage));
+    const worstResult = Math.min(...testResults.map(result => result.percentage));
+
+    return {
+      totalAttempts: testResults.length,
+      averageScore: avgScore,
+      bestScore: bestResult,
+      worstScore: worstResult
+    };
+  };
+
+  const renderResultsList = () => (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '1.5rem'
+    }}>
+      {/* Фильтры и поиск */}
+      <div style={{
+        display: 'flex',
+        gap: '1rem',
+        alignItems: 'center',
+        flexWrap: 'wrap'
+      }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem'
+        }}>
+          <span style={{
+            fontSize: '0.875rem',
+            fontWeight: '500',
+            color: '#374151'
+          }}>Фильтр по тесту:</span>
+          <select
+            value={selectedTest?.id || ''}
+            onChange={(e) => setSelectedTest(tests.find(t => t.id === parseInt(e.target.value)) || null)}
+            style={{
+              padding: '0.5rem',
+              border: '1px solid #d1d5db',
+              borderRadius: '0.375rem',
+              fontSize: '0.875rem'
+            }}
+          >
+            <option value="">Все тесты</option>
+            {tests.map(test => (
+              <option key={test.id} value={test.id}>
+                {test.title}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem'
+        }}>
+          <span style={{
+            fontSize: '0.875rem',
+            fontWeight: '500',
+            color: '#374151'
+          }}>Поиск:</span>
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Поиск по имени или тесту..."
+            style={{
+              padding: '0.5rem',
+              border: '1px solid #d1d5db',
+              borderRadius: '0.375rem',
+              fontSize: '0.875rem',
+              minWidth: '200px'
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Статистика */}
+      {selectedTest && (
+        <div style={{
+          backgroundColor: 'white',
+          borderRadius: '0.75rem',
+          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+          border: '1px solid #e5e7eb',
+          padding: '1.5rem'
+        }}>
+          <h3 style={{
+            fontSize: '1.125rem',
+            fontWeight: '600',
+            color: '#1f2937',
+            marginBottom: '1rem'
+          }}>Статистика теста: {selectedTest.title}</h3>
+          
+          {(() => {
+            const stats = getTestStats(selectedTest.id);
+            return stats ? (
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                gap: '1rem'
+              }}>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{
+                    fontSize: '1.5rem',
+                    fontWeight: 'bold',
+                    color: '#2563eb'
+                  }}>{stats.totalAttempts}</div>
+                  <div style={{
+                    fontSize: '0.875rem',
+                    color: '#6b7280'
+                  }}>Всего попыток</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{
+                    fontSize: '1.5rem',
+                    fontWeight: 'bold',
+                    color: '#059669'
+                  }}>{stats.averageScore.toFixed(1)}%</div>
+                  <div style={{
+                    fontSize: '0.875rem',
+                    color: '#6b7280'
+                  }}>Средний результат</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{
+                    fontSize: '1.5rem',
+                    fontWeight: 'bold',
+                    color: '#d97706'
+                  }}>{stats.bestScore}%</div>
+                  <div style={{
+                    fontSize: '0.875rem',
+                    color: '#6b7280'
+                  }}>Лучший результат</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{
+                    fontSize: '1.5rem',
+                    fontWeight: 'bold',
+                    color: '#dc2626'
+                  }}>{stats.worstScore}%</div>
+                  <div style={{
+                    fontSize: '0.875rem',
+                    color: '#6b7280'
+                  }}>Худший результат</div>
+                </div>
+              </div>
+            ) : (
+              <p style={{ color: '#6b7280' }}>Нет результатов для этого теста</p>
+            );
+          })()}
+        </div>
+      )}
+
+      {/* Список результатов */}
+      <div style={{
+        backgroundColor: 'white',
+        borderRadius: '0.75rem',
+        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+        border: '1px solid #e5e7eb'
+      }}>
+        <div style={{
+          padding: '1.5rem',
+          borderBottom: '1px solid #e5e7eb'
+        }}>
+          <h3 style={{
+            fontSize: '1.25rem',
+            fontWeight: '600',
+            color: '#1f2937'
+          }}>
+            Результаты тестирования ({searchedResults.length})
+          </h3>
+        </div>
+
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column'
+        }}>
+          {searchedResults.length > 0 ? (
+            searchedResults.map(result => (
+              <div key={result.id} style={{
+                padding: '1.5rem',
+                borderBottom: '1px solid #f3f4f6',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
+              onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'white'}
+              >
+                <div style={{ flex: 1 }}>
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-start',
+                    marginBottom: '0.5rem'
+                  }}>
+                    <div>
+                      <h4 style={{
+                        fontWeight: '600',
+                        color: '#1f2937',
+                        fontSize: '1.125rem'
+                      }}>{result.userName}</h4>
+                      <p style={{
+                        color: '#6b7280',
+                        fontSize: '0.875rem'
+                      }}>{result.testTitle}</p>
+                    </div>
+                    <div style={{
+                      textAlign: 'right'
+                    }}>
+                      <div style={{
+                        fontSize: '1.5rem',
+                        fontWeight: 'bold',
+                        color: getScoreColor(result.percentage)
+                      }}>
+                        {result.score}/{result.maxScore}
+                      </div>
+                      <div style={{
+                        fontSize: '0.875rem',
+                        color: '#6b7280'
+                      }}>
+                        {result.percentage}%
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                  }}>
+                    <span style={{
+                      fontSize: '0.875rem',
+                      color: '#6b7280'
+                    }}>
+                      Завершено: {new Date(result.completedAt).toLocaleDateString('ru-RU', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </span>
+                    <button
+                      onClick={() => {/* В будущем можно добавить детальный просмотр */}}
+                      style={{
+                        color: '#2563eb',
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: '0.875rem',
+                        textDecoration: 'underline'
+                      }}
+                    >
+                      Подробнее
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div style={{
+              padding: '3rem 2rem',
+              textAlign: 'center',
+              color: '#6b7280'
+            }}>
+              <div style={{
+                fontSize: '3rem',
+                marginBottom: '1rem'
+              }}>📊</div>
+              <p style={{
+                fontSize: '1.125rem',
+                marginBottom: '0.5rem'
+              }}>Результаты не найдены</p>
+              <p style={{
+                fontSize: '0.875rem'
+              }}>Попробуйте изменить параметры поиска</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100 py-8">
-      <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
-          {/* Заголовок */}
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <button
-                onClick={onBack}
-                className="flex items-center text-gray-600 hover:text-gray-800 mb-2"
-              >
-                ← Назад к тестам
-              </button>
-              <h1 className="text-3xl font-bold text-gray-800">Отзывы о тесте</h1>
-              <p className="text-gray-600 mt-2">{test.title}</p>
-            </div>
-            
-            {test.average_rating > 0 && (
-              <div className="text-center bg-white rounded-lg shadow p-4">
-                <div className="text-2xl font-bold text-yellow-600">
-                  {test.average_rating.toFixed(1)}
-                </div>
-                <div className="flex justify-center text-yellow-400 text-sm">
-                  {'★'.repeat(Math.round(test.average_rating))}
-                  {'☆'.repeat(5 - Math.round(test.average_rating))}
-                </div>
-                <div className="text-xs text-gray-500 mt-1">
-                  {test.review_count} отзывов
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Форма отзыва */}
-          {!showReviewForm ? (
-            <div className="bg-white rounded-lg shadow border p-6 mb-6 text-center">
-              <h3 className="text-xl font-semibold text-gray-800 mb-3">
-                Понравился тест?
-              </h3>
-              <p className="text-gray-600 mb-4">
-                Поделитесь вашим мнением и помогите другим студентам
-              </p>
-              <button
-                onClick={() => setShowReviewForm(true)}
-                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
-              >
-                Написать отзыв
-              </button>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmitReview} className="bg-white rounded-lg shadow border p-6 mb-6">
-              <h3 className="text-xl font-semibold text-gray-800 mb-4">Ваш отзыв</h3>
-              
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Оценка
-                </label>
-                <div className="flex gap-1">
-                  {[1, 2, 3, 4, 5].map(star => (
-                    <button
-                      key={star}
-                      type="button"
-                      onClick={() => setNewReview(prev => ({ ...prev, rating: star }))}
-                      className={`text-3xl transition-transform hover:scale-110 ${
-                        star <= newReview.rating ? 'text-yellow-400' : 'text-gray-300'
-                      }`}
-                    >
-                      ★
-                    </button>
-                  ))}
-                </div>
-                <div className="text-sm text-gray-500 mt-1">
-                  {newReview.rating === 1 && 'Ужасно'}
-                  {newReview.rating === 2 && 'Плохо'}
-                  {newReview.rating === 3 && 'Нормально'}
-                  {newReview.rating === 4 && 'Хорошо'}
-                  {newReview.rating === 5 && 'Отлично'}
-                </div>
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Комментарий *
-                </label>
-                <textarea
-                  value={newReview.comment}
-                  onChange={(e) => setNewReview(prev => ({ ...prev, comment: e.target.value }))}
-                  rows="4"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Поделитесь вашим мнением о тесте..."
-                  required
-                />
-              </div>
-
-              <div className="flex gap-3">
-                <button
-                  type="submit"
-                  className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
-                >
-                  Отправить отзыв
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowReviewForm(false)}
-                  className="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition-colors"
-                >
-                  Отмена
-                </button>
-              </div>
-            </form>
-          )}
-
-          {/* Список отзывов */}
-          <div className="bg-white rounded-lg shadow border">
-            <div className="p-6 border-b">
-              <h3 className="text-xl font-semibold text-gray-800">
-                Отзывы ({approvedReviews.length})
-              </h3>
-            </div>
-            
-            <div className="divide-y">
-              {approvedReviews.length > 0 ? (
-                approvedReviews.map(review => (
-                  <div key={review.id} className="p-6">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="flex text-yellow-400 text-lg">
-                          {'★'.repeat(review.rating)}
-                          {'☆'.repeat(5 - review.rating)}
-                        </div>
-                        <span className="font-semibold text-gray-800">
-                          {review.user_name}
-                        </span>
-                      </div>
-                      <span className="text-sm text-gray-400">
-                        {new Date(review.created_at).toLocaleDateString('ru-RU', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}
-                      </span>
-                    </div>
-                    <p className="text-gray-700 leading-relaxed">{review.comment}</p>
-                  </div>
-                ))
-              ) : (
-                <div className="p-8 text-center text-gray-500">
-                  <div className="text-4xl mb-3">💬</div>
-                  <p className="text-lg mb-2">Пока нет отзывов</p>
-                  <p className="text-sm">Будьте первым, кто оставит отзыв об этом тесте!</p>
-                </div>
-              )}
-            </div>
+    <div style={{
+      minHeight: '100vh',
+      backgroundColor: '#f9fafb',
+      padding: '2rem 0'
+    }}>
+      <div style={{
+        maxWidth: '80rem',
+        margin: '0 auto',
+        padding: '0 1rem'
+      }}>
+        {/* Заголовок */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '2rem'
+        }}>
+          <div>
+            <button
+              onClick={onBack}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                color: '#6b7280',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                marginBottom: '0.5rem',
+                fontSize: '0.875rem'
+              }}
+              onMouseOver={(e) => e.target.style.color = '#374151'}
+              onMouseOut={(e) => e.target.style.color = '#6b7280'}
+            >
+              ← Назад к панели
+            </button>
+            <h1 style={{
+              fontSize: '2rem',
+              fontWeight: 'bold',
+              color: '#1f2937'
+            }}>Результаты тестирования</h1>
+            <p style={{
+              color: '#6b7280',
+              marginTop: '0.5rem'
+            }}>
+              Просмотр результатов прохождения тестов пользователями
+            </p>
           </div>
         </div>
+
+        {renderResultsList()}
       </div>
     </div>
   );
 };
 
-export default TestReviews;
+export default ResultsView;
