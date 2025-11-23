@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 
-const ResultsView = ({ onBack }) => {
+const ResultsView = ({ testResults: propsTestResults = [], tests: propsTests = [], onBack }) => {
   const [selectedTest, setSelectedTest] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [tests, setTests] = useState([]);
-  const [testResults, setTestResults] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [tests, setTests] = useState(propsTests);
+  const [testResults, setTestResults] = useState(propsTestResults);
+  const [loading, setLoading] = useState(false);
 
   // Функция для нормализации результатов
   const normalizeResults = (results) => {
@@ -24,88 +24,61 @@ const ResultsView = ({ onBack }) => {
     }));
   };
 
-  // Загружаем данные из localStorage
+  // Обновляем данные при изменении пропсов
   useEffect(() => {
-    console.log('🔍 ResultsView: Загрузка данных...');
-    
-    const loadData = () => {
+    if (propsTests && propsTests.length > 0) {
+      setTests(propsTests);
+    }
+  }, [propsTests]);
+
+  useEffect(() => {
+    if (propsTestResults && propsTestResults.length > 0) {
+      const normalized = normalizeResults(propsTestResults);
+      setTestResults(normalized);
+    } else {
+      // Если пропсы пустые, пытаемся загрузить из localStorage
       try {
         const savedTests = localStorage.getItem('quizTests');
         const savedResults = localStorage.getItem('quizResults');
         
-        console.log('📁 quizTests из localStorage:', savedTests);
-        console.log('📁 quizResults из localStorage:', savedResults);
-        
         if (savedTests) {
           const parsedTests = JSON.parse(savedTests);
           setTests(parsedTests);
-          console.log('✅ Тесты загружены:', parsedTests);
-        } else {
-          console.log('❌ Тесты не найдены в localStorage');
         }
         
         if (savedResults) {
           const parsedResults = normalizeResults(JSON.parse(savedResults));
           setTestResults(parsedResults);
-          console.log('✅ Результаты загружены:', parsedResults);
-        } else {
-          console.log('❌ Результаты не найдены в localStorage');
         }
       } catch (error) {
-        console.error('❌ Ошибка загрузки данных:', error);
-      } finally {
-        setLoading(false);
+        console.error('Ошибка загрузки данных из localStorage:', error);
       }
-    };
+    }
+  }, [propsTestResults]);
 
-    loadData();
-  }, []);
 
-  // Функция для создания демо-результатов
-  const createDemoResults = () => {
-    console.log('🔄 Создание демо-результатов...');
-    const demoResults = [
-      {
-        id: 1,
-        testId: 1,
-        testTitle: "Тест по JavaScript",
-        userName: "Иван Иванов",
-        score: 5,
-        maxScore: 6,
-        percentage: 83,
-        completedAt: "2024-01-20T10:30:00Z"
-      },
-      {
-        id: 2,
-        testId: 1, 
-        testTitle: "Тест по JavaScript",
-        userName: "Мария Петрова",
-        score: 6,
-        maxScore: 6,
-        percentage: 100,
-        completedAt: "2024-01-20T11:15:00Z"
-      },
-      {
-        id: 3,
-        testId: 3,
-        testTitle: "Тест по Python",
-        userName: "Алексей Сидоров",
-        score: 8,
-        maxScore: 10,
-        percentage: 80,
-        completedAt: "2024-01-20T12:00:00Z"
+  // Обогащаем результаты названиями тестов, если они отсутствуют
+  const enrichedResults = (testResults || []).map(result => {
+    if (!result.testTitle && result.testId && tests && tests.length > 0) {
+      const test = tests.find(t => {
+        const tId = t.id;
+        const rId = result.testId;
+        return tId === rId || tId === parseInt(rId) || parseInt(tId) === rId;
+      });
+      if (test) {
+        return { ...result, testTitle: test.title };
       }
-    ];
-    
-    const normalizedResults = normalizeResults(demoResults);
-    setTestResults(normalizedResults);
-    localStorage.setItem('quizResults', JSON.stringify(normalizedResults));
-    console.log('✅ Демо-результаты созданы:', normalizedResults);
-  };
+    }
+    return result;
+  });
 
   const filteredResults = selectedTest 
-    ? testResults.filter(result => result.testId === selectedTest.id)
-    : testResults;
+    ? enrichedResults.filter(result => {
+        const testId = result.testId;
+        const selectedId = selectedTest.id;
+        return testId === selectedId || parseInt(testId) === selectedId || testId === parseInt(selectedId);
+      })
+    : enrichedResults;
 
   const searchedResults = searchTerm
     ? filteredResults.filter(result => 
@@ -114,6 +87,13 @@ const ResultsView = ({ onBack }) => {
       )
     : filteredResults;
 
+  // Сортируем результаты по дате (новые сверху)
+  const sortedResults = [...searchedResults].sort((a, b) => {
+    const dateA = a.completedAt ? new Date(a.completedAt).getTime() : 0;
+    const dateB = b.completedAt ? new Date(b.completedAt).getTime() : 0;
+    return dateB - dateA;
+  });
+
   const getScoreColor = (percentage) => {
     if (percentage >= 80) return '#059669';
     if (percentage >= 60) return '#d97706';
@@ -121,7 +101,10 @@ const ResultsView = ({ onBack }) => {
   };
 
   const getTestStats = (testId) => {
-    const resultsForTest = testResults.filter(result => result.testId === testId);
+    const resultsForTest = enrichedResults.filter(result => {
+      const rTestId = result.testId;
+      return rTestId === testId || parseInt(rTestId) === testId || rTestId === parseInt(testId);
+    });
     if (resultsForTest.length === 0) return null;
 
     const percentages = resultsForTest.map(result => result.percentage || 0);
@@ -172,16 +155,6 @@ const ResultsView = ({ onBack }) => {
       flexDirection: 'column',
       gap: '1.5rem'
     }}>
-      {/* Отладочная информация */}
-      <div style={{
-        backgroundColor: '#fef3c7',
-        border: '1px solid #f59e0b',
-        borderRadius: '0.5rem',
-        padding: '1rem',
-        fontSize: '0.875rem'
-      }}>
-        <strong>Отладка:</strong> Загружено {testResults.length} результатов, {tests.length} тестов
-      </div>
 
       {/* Фильтры и поиск */}
       <div style={{
@@ -346,7 +319,7 @@ const ResultsView = ({ onBack }) => {
             fontWeight: '600',
             color: '#1f2937'
           }}>
-            Результаты тестирования ({searchedResults.length})
+            Результаты тестирования ({sortedResults.length})
           </h3>
         </div>
 
@@ -354,8 +327,8 @@ const ResultsView = ({ onBack }) => {
           display: 'flex',
           flexDirection: 'column'
         }}>
-          {searchedResults.length > 0 ? (
-            searchedResults.map((result, index) => (
+          {sortedResults.length > 0 ? (
+            sortedResults.map((result, index) => (
               <div key={result.id || index} style={{
                 padding: '1.5rem',
                 borderBottom: '1px solid #f3f4f6',
@@ -442,20 +415,6 @@ const ResultsView = ({ onBack }) => {
               <p style={{
                 fontSize: '0.875rem'
               }}>{testResults.length === 0 ? 'Пока нет пройденных тестов' : 'Попробуйте изменить параметры поиска'}</p>
-              <button
-                onClick={createDemoResults}
-                style={{
-                  backgroundColor: '#2563eb',
-                  color: 'white',
-                  padding: '0.5rem 1rem',
-                  borderRadius: '0.375rem',
-                  border: 'none',
-                  cursor: 'pointer',
-                  marginTop: '1rem'
-                }}
-              >
-                Создать демо-результаты
-              </button>
             </div>
           )}
         </div>

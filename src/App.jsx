@@ -593,6 +593,8 @@ const handleSaveTestResult = (resultData) => {
           element={
             isAuthenticated ? (
               <ResultsView 
+                testResults={testResults}
+                tests={tests}
                 onBack={() => navigate('/admin')}
               />
             ) : (
