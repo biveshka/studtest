@@ -1,106 +1,205 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useLocation, Link } from 'react-router-dom';
-import axios from 'axios';
+import React from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
-
-const Results = () => {
+const Results = ({ testResults, tests }) => {
   const { testId } = useParams();
-  const location = useLocation();
-  const [results, setResults] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-  const currentResult = location.state;
+  // Находим последний результат для этого теста
+  const result = testResults
+    .filter(r => r.testId === parseInt(testId))
+    .sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt))[0];
 
-  useEffect(() => {
-    fetchResults();
-  }, [testId]);
+  const test = tests.find(t => t.id === parseInt(testId));
 
-  const fetchResults = async () => {
-    try {
-      const response = await axios.get(`${API_BASE_URL}/results/${testId}`);
-      setResults(response.data);
-    } catch (error) {
-      console.error('Error fetching results:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getScoreColor = (score, maxScore) => {
-    const percentage = (score / maxScore) * 100;
-    if (percentage >= 80) return 'text-green-600';
-    if (percentage >= 60) return 'text-yellow-600';
-    return 'text-red-600';
-  };
-
-  if (loading) {
+  if (!result) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '2rem'
+      }}>
+        <div style={{
+          backgroundColor: 'white',
+          borderRadius: '0.75rem',
+          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
+          padding: '2rem',
+          textAlign: 'center',
+          maxWidth: '400px',
+          width: '100%'
+        }}>
+          <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>❌</div>
+          <h2 style={{
+            fontSize: '1.5rem',
+            fontWeight: 'bold',
+            color: '#1f2937',
+            marginBottom: '1rem'
+          }}>Результат не найден</h2>
+          <button
+            onClick={() => navigate('/user')}
+            style={{
+              backgroundColor: '#2563eb',
+              color: 'white',
+              padding: '0.75rem 1.5rem',
+              borderRadius: '0.5rem',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: '1rem'
+            }}
+          >
+            Вернуться к тестам
+          </button>
+        </div>
       </div>
     );
   }
 
+  const getScoreColor = (percentage) => {
+    if (percentage >= 80) return '#059669';
+    if (percentage >= 60) return '#d97706';
+    return '#dc2626';
+  };
+
+  const scoreColor = getScoreColor(result.percentage);
+
   return (
-    <div className="max-w-4xl mx-auto">
-      {currentResult && (
-        <div className="bg-white rounded-lg shadow-lg p-8 mb-8 text-center">
-          <h2 className="text-3xl font-bold text-gray-800 mb-4">
-            Тест завершен!
-          </h2>
-          <div className={`text-5xl font-bold mb-4 ${getScoreColor(currentResult.score, currentResult.maxScore)}`}>
-            {currentResult.score} / {currentResult.maxScore}
-          </div>
-          <p className="text-lg text-gray-600 mb-2">
-            Поздравляем, {currentResult.userName}!
-          </p>
-          <p className="text-gray-500">
-            Ваш результат: {Math.round((currentResult.score / currentResult.maxScore) * 100)}%
-          </p>
-        </div>
-      )}
-
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <h3 className="text-xl font-semibold text-gray-800 mb-6">
-          История результатов
-        </h3>
-        
-        <div className="space-y-4">
-          {results.map((result, index) => (
-            <div
-              key={result.id}
-              className="flex items-center justify-between p-4 border border-gray-200 rounded-lg"
-            >
-              <div>
-                <span className="font-semibold text-gray-800">
-                  {result.user_name}
-                </span>
-                <span className="text-gray-500 text-sm ml-2">
-                  {new Date(result.completed_at).toLocaleDateString('ru-RU')}
-                </span>
-              </div>
-              <div className={`font-bold ${getScoreColor(result.score, result.max_score)}`}>
-                {result.score} / {result.max_score}
-              </div>
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%)',
+      padding: '2rem 0'
+    }}>
+      <div style={{
+        maxWidth: '1200px',
+        margin: '0 auto',
+        padding: '0 1rem'
+      }}>
+        <div style={{
+          maxWidth: '42rem',
+          margin: '0 auto'
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '0.75rem',
+            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+            padding: '2rem',
+            marginBottom: '2rem',
+            textAlign: 'center'
+          }}>
+            <h2 style={{
+              fontSize: '1.875rem',
+              fontWeight: 'bold',
+              color: '#1f2937',
+              marginBottom: '1rem'
+            }}>
+              Тест завершен!
+            </h2>
+            <div style={{
+              fontSize: '3rem',
+              fontWeight: 'bold',
+              marginBottom: '1rem',
+              color: scoreColor
+            }}>
+              {result.score} / {result.maxScore}
             </div>
-          ))}
-        </div>
-
-        {results.length === 0 && (
-          <div className="text-center py-8">
-            <p className="text-gray-500">Результаты не найдены</p>
+            <p style={{
+              fontSize: '1.125rem',
+              color: '#6b7280',
+              marginBottom: '0.5rem'
+            }}>
+              Поздравляем, {result.userName}!
+            </p>
+            <p style={{
+              color: '#6b7280',
+              marginBottom: '1.5rem'
+            }}>
+              Ваш результат: {result.percentage}%
+            </p>
+            <div style={{ marginTop: '1rem' }}>
+              {result.percentage >= 80 && (
+                <span style={{
+                  backgroundColor: '#d1fae5',
+                  color: '#065f46',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '9999px',
+                  fontSize: '0.875rem',
+                  fontWeight: '600'
+                }}>
+                  Отличный результат! 🎉
+                </span>
+              )}
+              {result.percentage >= 60 && result.percentage < 80 && (
+                <span style={{
+                  backgroundColor: '#fef3c7',
+                  color: '#92400e',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '9999px',
+                  fontSize: '0.875rem',
+                  fontWeight: '600'
+                }}>
+                  Хороший результат! 👍
+                </span>
+              )}
+              {result.percentage < 60 && (
+                <span style={{
+                  backgroundColor: '#fee2e2',
+                  color: '#991b1b',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '9999px',
+                  fontSize: '0.875rem',
+                  fontWeight: '600'
+                }}>
+                  Попробуйте еще раз! 💪
+                </span>
+              )}
+            </div>
           </div>
-        )}
-      </div>
 
-      <div className="text-center mt-8">
-        <Link
-          to="/"
-          className="inline-block bg-blue-600 text-white py-3 px-8 rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          Вернуться к списку тестов
-        </Link>
+          <div style={{
+            textAlign: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '1rem'
+          }}>
+            <button
+              onClick={() => navigate('/user')}
+              style={{
+                backgroundColor: '#2563eb',
+                color: 'white',
+                padding: '0.75rem 2rem',
+                borderRadius: '0.5rem',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseOver={(e) => e.target.style.backgroundColor = '#1d4ed8'}
+              onMouseOut={(e) => e.target.style.backgroundColor = '#2563eb'}
+            >
+              Пройти другой тест
+            </button>
+            {test && (
+              <button
+                onClick={() => navigate(`/reviews/${test.id}`)}
+                style={{
+                  backgroundColor: '#7c3aed',
+                  color: 'white',
+                  padding: '0.75rem 2rem',
+                  borderRadius: '0.5rem',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseOver={(e) => e.target.style.backgroundColor = '#6d28d9'}
+                onMouseOut={(e) => e.target.style.backgroundColor = '#7c3aed'}
+              >
+                Оставить отзыв
+              </button>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

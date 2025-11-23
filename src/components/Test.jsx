@@ -1,50 +1,59 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
-const Test = ({ tests }) => {
+const Test = ({ tests, onSaveResult }) => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [test, setTest] = useState(null);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState({});
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [userAnswers, setUserAnswers] = useState({});
   const [userName, setUserName] = useState('');
   const [showNameModal, setShowNameModal] = useState(true);
-  const [loading, setLoading] = useState(true);
+  const [testStarted, setTestStarted] = useState(false);
+
+  const test = tests.find(t => t.id === parseInt(id));
 
   useEffect(() => {
-    // Находим тест по ID из пропсов
-    const foundTest = tests.find(t => t.id === parseInt(id));
-    if (foundTest) {
-      setTest(foundTest);
-      setLoading(false);
-    } else {
-      setLoading(false);
+    if (!test) {
+      navigate('/user');
     }
-  }, [id, tests]);
+  }, [test, navigate]);
 
-  const handleAnswerSelect = (questionId, answerIndex) => {
-    setAnswers(prev => ({
+  if (!test) {
+    return null;
+  }
+
+  const startTest = () => {
+    if (!userName.trim()) {
+      alert('Пожалуйста, введите ваше имя');
+      return;
+    }
+    setShowNameModal(false);
+    setTestStarted(true);
+  };
+
+  const selectAnswer = (questionId, answerIndex) => {
+    setUserAnswers(prev => ({
       ...prev,
       [questionId]: answerIndex
     }));
   };
 
-  const handleNext = () => {
-    if (currentQuestion < test.questions.length - 1) {
-      setCurrentQuestion(prev => prev + 1);
+  const nextQuestion = () => {
+    if (currentQuestionIndex < test.questions.length - 1) {
+      setCurrentQuestionIndex(prev => prev + 1);
     }
   };
 
-  const handlePrev = () => {
-    if (currentQuestion > 0) {
-      setCurrentQuestion(prev => prev - 1);
+  const prevQuestion = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(prev => prev - 1);
     }
   };
 
   const calculateScore = () => {
     let score = 0;
     test.questions.forEach(question => {
-      const userAnswer = answers[question.id];
+      const userAnswer = userAnswers[question.id];
       if (userAnswer !== undefined && question.correct_answer === userAnswer) {
         score += question.points;
       }
@@ -52,98 +61,116 @@ const Test = ({ tests }) => {
     return score;
   };
 
-  const handleSubmit = async () => {
-    if (!userName.trim()) {
-      alert('Пожалуйста, введите ваше имя');
-      return;
-    }
-
+  const finishTest = () => {
     const score = calculateScore();
-    const maxScore = test.questions.reduce((sum, q) => sum + q.points, 0);
+    const maxScore = test.max_score;
+    const percentage = Math.round((score / maxScore) * 100);
 
-    try {
-      // В демо-режиме просто сохраняем в localStorage
-      const results = {
-        test_id: test.id,
-        test_title: test.title,
-        user_name: userName,
-        score,
-        max_score: maxScore,
-        completed_at: new Date().toISOString(),
-        answers: Object.entries(answers).map(([questionId, answerIndex]) => ({
-          question_id: questionId,
-          answer_index: answerIndex
-        }))
-      };
-
-      // Сохраняем результаты в localStorage
-      const existingResults = JSON.parse(localStorage.getItem('quizResults') || '[]');
-      localStorage.setItem('quizResults', JSON.stringify([...existingResults, results]));
-
-      navigate(`/results/${test.id}`, {
-        state: { 
-          score, 
-          maxScore, 
-          userName,
-          test 
-        }
-      });
-    } catch (error) {
-      console.error('Error saving results:', error);
-      alert('Ошибка при сохранении результатов');
-    }
+    // Сохраняем результат
+    onSaveResult({
+      testId: test.id,
+      testTitle: test.title,
+      userName: userName,
+      score: score,
+      maxScore: maxScore,
+      percentage: percentage,
+      answers: test.questions.map(question => ({
+        questionId: question.id,
+        questionText: question.question_text,
+        userAnswer: userAnswers[question.id],
+        correctAnswer: question.correct_answer,
+        isCorrect: userAnswers[question.id] === question.correct_answer,
+        options: question.options
+      }))
+    });
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
-  if (!test) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md text-center">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Тест не найден</h2>
-          <p className="text-gray-600 mb-6">Запрошенный тест не существует или был удален.</p>
-          <button 
-            onClick={() => navigate('/user')}
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Вернуться к тестам
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const currentQuestion = test.questions[currentQuestionIndex];
+  const progress = ((currentQuestionIndex + 1) / test.questions.length) * 100;
+  const isLastQuestion = currentQuestionIndex === test.questions.length - 1;
 
   if (showNameModal) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-        <div className="bg-white rounded-lg p-6 max-w-md w-full">
-          <h2 className="text-2xl font-bold mb-4 text-gray-800">Введите ваше имя</h2>
-          <p className="text-gray-600 mb-4">Перед началом теста "{test.title}"</p>
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '1rem',
+        zIndex: 50
+      }}>
+        <div style={{
+          backgroundColor: 'white',
+          borderRadius: '0.75rem',
+          padding: '2rem',
+          maxWidth: '28rem',
+          width: '100%'
+        }}>
+          <h2 style={{
+            fontSize: '1.5rem',
+            fontWeight: 'bold',
+            marginBottom: '1rem',
+            color: '#1f2937'
+          }}>Введите ваше имя</h2>
+          <p style={{
+            color: '#6b7280',
+            marginBottom: '1.5rem'
+          }}>Перед началом теста "{test.title}" введите ваше имя</p>
           <input
             type="text"
             value={userName}
             onChange={(e) => setUserName(e.target.value)}
             placeholder="Ваше имя"
-            className="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            onKeyPress={(e) => e.key === 'Enter' && userName.trim() && setShowNameModal(false)}
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              border: '1px solid #d1d5db',
+              borderRadius: '0.5rem',
+              marginBottom: '1.5rem',
+              fontSize: '1rem'
+            }}
+            onKeyPress={(e) => e.key === 'Enter' && startTest()}
           />
-          <div className="flex gap-3">
-            <button
+          <div style={{
+            display: 'flex',
+            gap: '0.75rem'
+          }}>
+            <button 
               onClick={() => navigate('/user')}
-              className="flex-1 bg-gray-500 text-white py-3 rounded-lg hover:bg-gray-600 transition-colors"
+              style={{
+                flex: 1,
+                backgroundColor: '#6b7280',
+                color: 'white',
+                padding: '0.75rem',
+                borderRadius: '0.5rem',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseOver={(e) => e.target.style.backgroundColor = '#4b5563'}
+              onMouseOut={(e) => e.target.style.backgroundColor = '#6b7280'}
             >
               Отмена
             </button>
-            <button
-              onClick={() => userName.trim() && setShowNameModal(false)}
-              disabled={!userName.trim()}
-              className="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+            <button 
+              onClick={startTest}
+              style={{
+                flex: 1,
+                backgroundColor: '#2563eb',
+                color: 'white',
+                padding: '0.75rem',
+                borderRadius: '0.5rem',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseOver={(e) => e.target.style.backgroundColor = '#1d4ed8'}
+              onMouseOut={(e) => e.target.style.backgroundColor = '#2563eb'}
             >
               Начать тест
             </button>
@@ -153,119 +180,215 @@ const Test = ({ tests }) => {
     );
   }
 
-  const question = test.questions[currentQuestion];
-  const progress = ((currentQuestion + 1) / test.questions.length) * 100;
-  const isLastQuestion = currentQuestion === test.questions.length - 1;
+  if (!testStarted) {
+    return null;
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
-      <div className="container mx-auto px-4">
-        <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6">
-          {/* Заголовок теста */}
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">{test.title}</h1>
-            <p className="text-gray-600">Участник: {userName}</p>
-          </div>
-
-          {/* Прогресс бар */}
-          <div className="mb-6">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm text-gray-600">
-                Вопрос {currentQuestion + 1} из {test.questions.length}
-              </span>
-              <span className="text-sm font-semibold text-blue-600">
-                {question.points} баллов
-              </span>
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%)',
+      padding: '2rem 0'
+    }}>
+      <div style={{
+        maxWidth: '1200px',
+        margin: '0 auto',
+        padding: '0 1rem'
+      }}>
+        <div style={{
+          maxWidth: '42rem',
+          margin: '0 auto',
+          backgroundColor: 'white',
+          borderRadius: '0.75rem',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+          padding: '1.5rem'
+        }}>
+          {/* Заголовок и прогресс */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '1.5rem'
+          }}>
+            <div>
+              <h1 style={{
+                fontSize: '1.5rem',
+                fontWeight: 'bold',
+                color: '#1f2937',
+                marginBottom: '0.25rem'
+              }}>{test.title}</h1>
+              <p style={{
+                color: '#6b7280',
+                fontSize: '0.875rem'
+              }}>Студент: {userName}</p>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${progress}%` }}
-              ></div>
+            <div style={{
+              textAlign: 'right'
+            }}>
+              <div style={{
+                fontSize: '0.875rem',
+                color: '#6b7280',
+                marginBottom: '0.25rem'
+              }}>
+                Вопрос {currentQuestionIndex + 1} из {test.questions.length}
+              </div>
+              <div style={{
+                width: '120px',
+                backgroundColor: '#e5e7eb',
+                borderRadius: '9999px',
+                height: '0.5rem'
+              }}>
+                <div
+                  style={{
+                    backgroundColor: '#2563eb',
+                    height: '0.5rem',
+                    borderRadius: '9999px',
+                    transition: 'width 0.3s ease',
+                    width: `${progress}%`
+                  }}
+                ></div>
+              </div>
             </div>
           </div>
 
           {/* Вопрос */}
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
-              {question.question_text}
+          <div style={{ marginBottom: '1.5rem' }}>
+            <h2 style={{
+              fontSize: '1.25rem',
+              fontWeight: '600',
+              color: '#1f2937',
+              marginBottom: '1rem'
+            }}>
+              {currentQuestion.question_text}
             </h2>
             
             {/* Варианты ответов */}
-            <div className="space-y-3">
-              {question.options.map((option, index) => (
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.75rem'
+            }}>
+              {currentQuestion.options.map((option, index) => (
                 <button
                   key={index}
-                  onClick={() => handleAnswerSelect(question.id, index)}
-                  className={`w-full text-left p-4 rounded-lg border-2 transition-all duration-200 ${
-                    answers[question.id] === index
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                  }`}
+                  onClick={() => selectAnswer(currentQuestion.id, index)}
+                  style={{
+                    width: '100%',
+                    textAlign: 'left',
+                    padding: '1rem',
+                    borderRadius: '0.5rem',
+                    border: '2px solid',
+                    borderColor: userAnswers[currentQuestion.id] === index ? '#3b82f6' : '#e5e7eb',
+                    backgroundColor: userAnswers[currentQuestion.id] === index ? '#dbeafe' : 'white',
+                    color: userAnswers[currentQuestion.id] === index ? '#1e40af' : '#374151',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseOver={(e) => {
+                    if (userAnswers[currentQuestion.id] !== index) {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.backgroundColor = '#f9fafb';
+                    }
+                  }}
+                  onMouseOut={(e) => {
+                    if (userAnswers[currentQuestion.id] !== index) {
+                      e.target.style.borderColor = '#e5e7eb';
+                      e.target.style.backgroundColor = 'white';
+                    }
+                  }}
                 >
-                  <div className="flex items-center">
-                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center mr-3 ${
-                      answers[question.id] === index
-                        ? 'border-blue-500 bg-blue-500'
-                        : 'border-gray-300'
-                    }`}>
-                      {answers[question.id] === index && (
-                        <div className="w-2 h-2 rounded-full bg-white"></div>
-                      )}
-                    </div>
-                    <span>{option}</span>
-                  </div>
+                  {option}
                 </button>
               ))}
             </div>
           </div>
 
           {/* Навигация */}
-          <div className="flex justify-between pt-4 border-t">
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
             <button
-              onClick={handlePrev}
-              disabled={currentQuestion === 0}
-              className="px-6 py-2 border border-gray-300 rounded-lg text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+              onClick={prevQuestion}
+              disabled={currentQuestionIndex === 0}
+              style={{
+                padding: '0.5rem 1.5rem',
+                border: '1px solid #d1d5db',
+                borderRadius: '0.5rem',
+                color: '#6b7280',
+                backgroundColor: 'white',
+                cursor: currentQuestionIndex === 0 ? 'not-allowed' : 'pointer',
+                opacity: currentQuestionIndex === 0 ? 0.5 : 1,
+                transition: 'all 0.2s'
+              }}
+              onMouseOver={(e) => {
+                if (currentQuestionIndex !== 0) {
+                  e.target.style.backgroundColor = '#f9fafb';
+                }
+              }}
+              onMouseOut={(e) => {
+                if (currentQuestionIndex !== 0) {
+                  e.target.style.backgroundColor = 'white';
+                }
+              }}
             >
               Назад
             </button>
 
             {isLastQuestion ? (
               <button
-                onClick={handleSubmit}
-                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                onClick={finishTest}
+                disabled={userAnswers[currentQuestion.id] === undefined}
+                style={{
+                  padding: '0.5rem 1.5rem',
+                  backgroundColor: userAnswers[currentQuestion.id] === undefined ? '#9ca3af' : '#059669',
+                  color: 'white',
+                  borderRadius: '0.5rem',
+                  border: 'none',
+                  cursor: userAnswers[currentQuestion.id] === undefined ? 'not-allowed' : 'pointer',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseOver={(e) => {
+                  if (userAnswers[currentQuestion.id] !== undefined) {
+                    e.target.style.backgroundColor = '#047857';
+                  }
+                }}
+                onMouseOut={(e) => {
+                  if (userAnswers[currentQuestion.id] !== undefined) {
+                    e.target.style.backgroundColor = '#059669';
+                  }
+                }}
               >
                 Завершить тест
               </button>
             ) : (
               <button
-                onClick={handleNext}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                onClick={nextQuestion}
+                disabled={userAnswers[currentQuestion.id] === undefined}
+                style={{
+                  padding: '0.5rem 1.5rem',
+                  backgroundColor: userAnswers[currentQuestion.id] === undefined ? '#9ca3af' : '#2563eb',
+                  color: 'white',
+                  borderRadius: '0.5rem',
+                  border: 'none',
+                  cursor: userAnswers[currentQuestion.id] === undefined ? 'not-allowed' : 'pointer',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseOver={(e) => {
+                  if (userAnswers[currentQuestion.id] !== undefined) {
+                    e.target.style.backgroundColor = '#1d4ed8';
+                  }
+                }}
+                onMouseOut={(e) => {
+                  if (userAnswers[currentQuestion.id] !== undefined) {
+                    e.target.style.backgroundColor = '#2563eb';
+                  }
+                }}
               >
                 Далее
               </button>
             )}
-          </div>
-
-          {/* Индикатор ответов */}
-          <div className="mt-6">
-            <p className="text-sm text-gray-600 mb-2">Прогресс ответов:</p>
-            <div className="flex flex-wrap gap-2">
-              {test.questions.map((q, index) => (
-                <div
-                  key={q.id}
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                    answers[q.id] !== undefined
-                      ? 'bg-green-500 text-white'
-                      : index === currentQuestion
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-200 text-gray-600'
-                  }`}
-                >
-                  {index + 1}
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </div>

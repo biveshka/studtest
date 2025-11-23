@@ -1,70 +1,12 @@
 import React, { useState } from 'react';
 
-const ResultsView = ({ tests, onBack }) => {
+const ResultsView = ({ tests, testResults, onBack }) => {
   const [selectedTest, setSelectedTest] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Демо данные результатов
-  const demoResults = [
-    {
-      id: 1,
-      testId: 1,
-      testTitle: "Тест по JavaScript",
-      userName: "Иван Петров",
-      score: 8,
-      maxScore: 10,
-      percentage: 80,
-      completedAt: "2024-01-15T14:30:00Z",
-      answers: [
-        { questionId: 1, userAnswer: 1, correctAnswer: 1, isCorrect: true },
-        { questionId: 2, userAnswer: 2, correctAnswer: 2, isCorrect: true },
-        { questionId: 3, userAnswer: 1, correctAnswer: 1, isCorrect: true },
-        { questionId: 4, userAnswer: 0, correctAnswer: 1, isCorrect: false }
-      ]
-    },
-    {
-      id: 2,
-      testId: 1,
-      testTitle: "Тест по JavaScript",
-      userName: "Мария Сидорова",
-      score: 10,
-      maxScore: 10,
-      percentage: 100,
-      completedAt: "2024-01-15T16:45:00Z",
-      answers: [
-        { questionId: 1, userAnswer: 1, correctAnswer: 1, isCorrect: true },
-        { questionId: 2, userAnswer: 2, correctAnswer: 2, isCorrect: true },
-        { questionId: 3, userAnswer: 1, correctAnswer: 1, isCorrect: true },
-        { questionId: 4, userAnswer: 1, correctAnswer: 1, isCorrect: true }
-      ]
-    },
-    {
-      id: 3,
-      testId: 3,
-      testTitle: "Тест по Python",
-      userName: "Алексей Козлов",
-      score: 12,
-      maxScore: 18,
-      percentage: 67,
-      completedAt: "2024-01-14T10:20:00Z",
-      answers: []
-    },
-    {
-      id: 4,
-      testId: 3,
-      testTitle: "Тест по Python",
-      userName: "Дмитрий Новиков",
-      score: 6,
-      maxScore: 10,
-      percentage: 60,
-      completedAt: "2024-01-16T09:15:00Z",
-      answers: []
-    }
-  ];
-
   const filteredResults = selectedTest 
-    ? demoResults.filter(result => result.testId === selectedTest.id)
-    : demoResults;
+    ? testResults.filter(result => result.testId === selectedTest.id)
+    : testResults;
 
   const searchedResults = searchTerm
     ? filteredResults.filter(result => 
@@ -80,7 +22,7 @@ const ResultsView = ({ tests, onBack }) => {
   };
 
   const getTestStats = (testId) => {
-    const testResults = demoResults.filter(result => result.testId === testId);
+    const testResults = testResults.filter(result => result.testId === testId);
     if (testResults.length === 0) return null;
 
     const avgScore = testResults.reduce((sum, result) => sum + result.percentage, 0) / testResults.length;
@@ -164,80 +106,75 @@ const ResultsView = ({ tests, onBack }) => {
       </div>
 
       {/* Статистика */}
-      {selectedTest && (
-        <div style={{
-          backgroundColor: 'white',
-          borderRadius: '0.75rem',
-          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
-          border: '1px solid #e5e7eb',
-          padding: '1.5rem'
-        }}>
-          <h3 style={{
-            fontSize: '1.125rem',
-            fontWeight: '600',
-            color: '#1f2937',
-            marginBottom: '1rem'
-          }}>Статистика теста: {selectedTest.title}</h3>
-          
-          {(() => {
-            const stats = getTestStats(selectedTest.id);
-            return stats ? (
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-                gap: '1rem'
-              }}>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{
-                    fontSize: '1.5rem',
-                    fontWeight: 'bold',
-                    color: '#2563eb'
-                  }}>{stats.totalAttempts}</div>
-                  <div style={{
-                    fontSize: '0.875rem',
-                    color: '#6b7280'
-                  }}>Всего попыток</div>
-                </div>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{
-                    fontSize: '1.5rem',
-                    fontWeight: 'bold',
-                    color: '#059669'
-                  }}>{stats.averageScore.toFixed(1)}%</div>
-                  <div style={{
-                    fontSize: '0.875rem',
-                    color: '#6b7280'
-                  }}>Средний результат</div>
-                </div>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{
-                    fontSize: '1.5rem',
-                    fontWeight: 'bold',
-                    color: '#d97706'
-                  }}>{stats.bestScore}%</div>
-                  <div style={{
-                    fontSize: '0.875rem',
-                    color: '#6b7280'
-                  }}>Лучший результат</div>
-                </div>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{
-                    fontSize: '1.5rem',
-                    fontWeight: 'bold',
-                    color: '#dc2626'
-                  }}>{stats.worstScore}%</div>
-                  <div style={{
-                    fontSize: '0.875rem',
-                    color: '#6b7280'
-                  }}>Худший результат</div>
-                </div>
+      {selectedTest && (() => {
+        const stats = getTestStats(selectedTest.id);
+        return stats ? (
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '0.75rem',
+            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+            border: '1px solid #e5e7eb',
+            padding: '1.5rem'
+          }}>
+            <h3 style={{
+              fontSize: '1.125rem',
+              fontWeight: '600',
+              color: '#1f2937',
+              marginBottom: '1rem'
+            }}>Статистика теста: {selectedTest.title}</h3>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+              gap: '1rem'
+            }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{
+                  fontSize: '1.5rem',
+                  fontWeight: 'bold',
+                  color: '#2563eb'
+                }}>{stats.totalAttempts}</div>
+                <div style={{
+                  fontSize: '0.875rem',
+                  color: '#6b7280'
+                }}>Всего попыток</div>
               </div>
-            ) : (
-              <p style={{ color: '#6b7280' }}>Нет результатов для этого теста</p>
-            );
-          })()}
-        </div>
-      )}
+              <div style={{ textAlign: 'center' }}>
+                <div style={{
+                  fontSize: '1.5rem',
+                  fontWeight: 'bold',
+                  color: '#059669'
+                }}>{stats.averageScore.toFixed(1)}%</div>
+                <div style={{
+                  fontSize: '0.875rem',
+                  color: '#6b7280'
+                }}>Средний результат</div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{
+                  fontSize: '1.5rem',
+                  fontWeight: 'bold',
+                  color: '#d97706'
+                }}>{stats.bestScore}%</div>
+                <div style={{
+                  fontSize: '0.875rem',
+                  color: '#6b7280'
+                }}>Лучший результат</div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{
+                  fontSize: '1.5rem',
+                  fontWeight: 'bold',
+                  color: '#dc2626'
+                }}>{stats.worstScore}%</div>
+                <div style={{
+                  fontSize: '0.875rem',
+                  color: '#6b7280'
+                }}>Худший результат</div>
+              </div>
+            </div>
+          </div>
+        ) : null;
+      })()}
 
       {/* Список результатов */}
       <div style={{
@@ -330,19 +267,6 @@ const ResultsView = ({ tests, onBack }) => {
                         minute: '2-digit'
                       })}
                     </span>
-                    <button
-                      onClick={() => {/* В будущем можно добавить детальный просмотр */}}
-                      style={{
-                        color: '#2563eb',
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        fontSize: '0.875rem',
-                        textDecoration: 'underline'
-                      }}
-                    >
-                      Подробнее
-                    </button>
                   </div>
                 </div>
               </div>
@@ -363,7 +287,7 @@ const ResultsView = ({ tests, onBack }) => {
               }}>Результаты не найдены</p>
               <p style={{
                 fontSize: '0.875rem'
-              }}>Попробуйте изменить параметры поиска</p>
+              }}>{testResults.length === 0 ? 'Пока нет пройденных тестов' : 'Попробуйте изменить параметры поиска'}</p>
             </div>
           )}
         </div>

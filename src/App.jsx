@@ -163,7 +163,7 @@ const DEMO_TESTS = [
       {
         id: 305,
         question_text: "Что такое генератор в Python?",
-        options: ["Функция для создания случайных чисел", "Объект по итерации для последовательности", "Функция с yeild вместо return", "Модуль для работы с электроэнергией"],
+        options: ["Функция для создания случайных чисел", "Объект по итерации для последовательности", "Функция с yield вместо return", "Модуль для работы с электроэнергией"],
         correct_answer: 2,
         points: 2
       }
@@ -300,15 +300,21 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
   const [selectedTag, setSelectedTag] = useState(null);
+  const [testResults, setTestResults] = useState([]);
   
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Загрузка тестов из localStorage
+  // Загрузка тестов и результатов из localStorage
   useEffect(() => {
     const savedTests = localStorage.getItem('quizTests');
+    const savedResults = localStorage.getItem('quizResults');
+    
     if (savedTests) {
       setTests(JSON.parse(savedTests));
+    }
+    if (savedResults) {
+      setTestResults(JSON.parse(savedResults));
     }
   }, []);
 
@@ -316,6 +322,11 @@ function App() {
   useEffect(() => {
     localStorage.setItem('quizTests', JSON.stringify(tests));
   }, [tests]);
+
+  // Сохранение результатов в localStorage
+  useEffect(() => {
+    localStorage.setItem('quizResults', JSON.stringify(testResults));
+  }, [testResults]);
 
   const handleRoleSelection = (role) => {
     if (role === 'admin') {
@@ -393,6 +404,20 @@ function App() {
     }));
   };
 
+  // Новая функция для сохранения результатов теста
+  const handleSaveTestResult = (resultData) => {
+    const newResult = {
+      id: Date.now(),
+      ...resultData,
+      completedAt: new Date().toISOString()
+    };
+    
+    setTestResults(prev => [...prev, newResult]);
+    
+    // Переходим на страницу результатов
+    navigate(`/results/${resultData.testId}`);
+  };
+
   const handleTagFilter = (tag) => {
     setSelectedTag(selectedTag?.id === tag.id ? null : tag);
   };
@@ -423,10 +448,26 @@ function App() {
         />
 
         {/* Маршрут для прохождения теста */}
-        <Route path="/test/:id" element={<Test tests={tests} />} />
+        <Route 
+          path="/test/:id" 
+          element={
+            <Test 
+              tests={tests} 
+              onSaveResult={handleSaveTestResult}
+            />
+          } 
+        />
 
         {/* Маршрут для просмотра результатов */}
-        <Route path="/results/:testId" element={<Results />} />
+        <Route 
+          path="/results/:testId" 
+          element={
+            <Results 
+              testResults={testResults}
+              tests={tests}
+            />
+          } 
+        />
 
         {/* Маршрут для отзывов */}
         <Route 
@@ -477,6 +518,7 @@ function App() {
             isAuthenticated ? (
               <ResultsView 
                 tests={tests}
+                testResults={testResults}
                 onBack={() => navigate('/admin')}
               />
             ) : (
