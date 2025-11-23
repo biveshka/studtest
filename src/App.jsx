@@ -355,18 +355,32 @@ function App() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Загрузка тестов и результатов из localStorage
+  // Загрузка тестов и результатов из localStorage (только при первой загрузке)
   useEffect(() => {
     const savedTests = localStorage.getItem('quizTests');
     const savedResults = localStorage.getItem('quizResults');
     
     if (savedTests) {
-      setTests(JSON.parse(savedTests));
+      try {
+        const parsedTests = JSON.parse(savedTests);
+        if (parsedTests && parsedTests.length > 0) {
+          setTests(parsedTests);
+        }
+      } catch (error) {
+        console.error('Ошибка загрузки тестов:', error);
+      }
     }
+    
     if (savedResults) {
-      const results = normalizeResults(JSON.parse(savedResults));
-      setTestResults(results);
-      console.log('Нормализованные результаты:', results);
+      try {
+        const results = normalizeResults(JSON.parse(savedResults));
+        if (results && results.length > 0) {
+          setTestResults(results);
+          console.log('Загружено результатов из localStorage:', results.length);
+        }
+      } catch (error) {
+        console.error('Ошибка загрузки результатов:', error);
+      }
     }
   }, []);
 
@@ -375,9 +389,11 @@ function App() {
     localStorage.setItem('quizTests', JSON.stringify(tests));
   }, [tests]);
 
-  // Сохранение результатов в localStorage
+  // Сохранение результатов в localStorage (только если массив не пустой)
   useEffect(() => {
-    localStorage.setItem('quizResults', JSON.stringify(testResults));
+    if (testResults.length > 0) {
+      localStorage.setItem('quizResults', JSON.stringify(testResults));
+    }
   }, [testResults]);
 
   const handleRoleSelection = (role) => {
@@ -463,7 +479,7 @@ const handleSaveTestResult = (resultData) => {
   
   const maxScore = resultData.maxScore || resultData.max_score || 1;
   const score = resultData.score || 0;
-  const percentage = Math.round((score / maxScore) * 100);
+  const percentage = resultData.percentage || Math.round((score / maxScore) * 100);
   
   const newResult = {
     id: Date.now(),
@@ -479,8 +495,26 @@ const handleSaveTestResult = (resultData) => {
   
   console.log('💾 Сохраняем результат:', newResult);
   
+  // Используем функциональное обновление для гарантии актуальных данных
   setTestResults(prev => {
-    const updatedResults = [...prev, newResult];
+    // Проверяем, нет ли уже такого результата (по id или по комбинации testId + userName + completedAt)
+    const existingIndex = prev.findIndex(r => 
+      r.id === newResult.id || 
+      (r.testId === newResult.testId && 
+       r.userName === newResult.userName && 
+       Math.abs(new Date(r.completedAt).getTime() - new Date(newResult.completedAt).getTime()) < 1000)
+    );
+    
+    let updatedResults;
+    if (existingIndex >= 0) {
+      // Если результат уже есть, обновляем его
+      updatedResults = [...prev];
+      updatedResults[existingIndex] = newResult;
+    } else {
+      // Если результата нет, добавляем новый
+      updatedResults = [...prev, newResult];
+    }
+    
     console.log('✅ Все результаты после сохранения:', updatedResults);
     
     // Сохраняем в localStorage сразу
@@ -593,6 +627,7 @@ const handleSaveTestResult = (resultData) => {
           element={
             isAuthenticated ? (
               <ResultsView 
+                key="admin-results"
                 testResults={testResults}
                 tests={tests}
                 onBack={() => navigate('/admin')}

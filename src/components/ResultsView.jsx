@@ -24,50 +24,69 @@ const ResultsView = ({ testResults: propsTestResults = [], tests: propsTests = [
     }));
   }, []);
 
-  // Начальная загрузка данных при монтировании
-  useEffect(() => {
-    const loadInitialData = () => {
-      try {
-        // Загружаем тесты
-        const savedTests = localStorage.getItem('quizTests');
-        if (savedTests) {
-          const parsedTests = JSON.parse(savedTests);
-          if (parsedTests && parsedTests.length > 0) {
-            setTests(parsedTests);
-          }
+  // Начальная загрузка данных при монтировании и обновление при возврате на страницу
+  const loadDataFromStorage = React.useCallback(() => {
+    try {
+      // Загружаем тесты
+      const savedTests = localStorage.getItem('quizTests');
+      if (savedTests) {
+        const parsedTests = JSON.parse(savedTests);
+        if (parsedTests && parsedTests.length > 0) {
+          setTests(parsedTests);
         }
-        
-        // Загружаем результаты
-        const savedResults = localStorage.getItem('quizResults');
-        if (savedResults) {
-          const parsedResults = normalizeResults(JSON.parse(savedResults));
-          if (parsedResults && parsedResults.length > 0) {
-            setTestResults(parsedResults);
-          }
-        }
-      } catch (error) {
-        console.error('Ошибка начальной загрузки данных:', error);
-      } finally {
-        setLoading(false);
       }
-    };
-
-    loadInitialData();
+      
+      // Загружаем результаты
+      const savedResults = localStorage.getItem('quizResults');
+      if (savedResults) {
+        const parsedResults = normalizeResults(JSON.parse(savedResults));
+        setTestResults(parsedResults); // Обновляем даже если пустой массив
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки данных:', error);
+    } finally {
+      setLoading(false);
+    }
   }, [normalizeResults]);
+
+  useEffect(() => {
+    loadDataFromStorage();
+  }, [loadDataFromStorage]);
 
   // Обновляем данные при изменении пропсов (приоритет пропсам)
   useEffect(() => {
-    if (propsTests && propsTests.length > 0) {
+    if (propsTests) {
       setTests(propsTests);
     }
   }, [propsTests]);
 
   useEffect(() => {
-    if (propsTestResults && propsTestResults.length > 0) {
+    if (propsTestResults) {
       const normalized = normalizeResults(propsTestResults);
       setTestResults(normalized);
     }
-  }, [propsTestResults]);
+  }, [propsTestResults, normalizeResults]);
+
+  // Обновляем данные при фокусе на странице (когда пользователь возвращается)
+  useEffect(() => {
+    const handleFocus = () => {
+      loadDataFromStorage();
+    };
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        loadDataFromStorage();
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [loadDataFromStorage]);
 
 
   // Обогащаем результаты названиями тестов, если они отсутствуют
