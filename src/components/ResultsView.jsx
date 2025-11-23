@@ -4,13 +4,13 @@ const ResultsView = ({ tests, onBack }) => {
   const [selectedTest, setSelectedTest] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Демо данные результатов (в реальном приложении будут из базы данных)
+  // Демо данные результатов
   const demoResults = [
     {
       id: 1,
       testId: 1,
-      testTitle: "Тест по Python - Основы",
-      userName: "Стуков Артем",
+      testTitle: "Тест по JavaScript",
+      userName: "Иван Петров",
       score: 8,
       maxScore: 10,
       percentage: 80,
@@ -25,8 +25,8 @@ const ResultsView = ({ tests, onBack }) => {
     {
       id: 2,
       testId: 1,
-      testTitle: "Тест по Python - Основы",
-      userName: "Филиппов Александр",
+      testTitle: "Тест по JavaScript",
+      userName: "Мария Сидорова",
       score: 10,
       maxScore: 10,
       percentage: 100,
@@ -40,8 +40,8 @@ const ResultsView = ({ tests, onBack }) => {
     },
     {
       id: 3,
-      testId: 2,
-      testTitle: "Тест по JavaScript",
+      testId: 3,
+      testTitle: "Тест по Python",
       userName: "Алексей Козлов",
       score: 12,
       maxScore: 18,
@@ -51,8 +51,8 @@ const ResultsView = ({ tests, onBack }) => {
     },
     {
       id: 4,
-      testId: 1,
-      testTitle: "Тест по Python - Основы",
+      testId: 3,
+      testTitle: "Тест по Python",
       userName: "Дмитрий Новиков",
       score: 6,
       maxScore: 10,
@@ -74,9 +74,9 @@ const ResultsView = ({ tests, onBack }) => {
     : filteredResults;
 
   const getScoreColor = (percentage) => {
-    if (percentage >= 80) return '#059669'; // green
-    if (percentage >= 60) return '#d97706'; // yellow
-    return '#dc2626'; // red
+    if (percentage >= 80) return '#059669';
+    if (percentage >= 60) return '#d97706';
+    return '#dc2626';
   };
 
   const getTestStats = (testId) => {
@@ -168,7 +168,7 @@ const ResultsView = ({ tests, onBack }) => {
         <div style={{
           backgroundColor: 'white',
           borderRadius: '0.75rem',
-          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
           border: '1px solid #e5e7eb',
           padding: '1.5rem'
         }}>
@@ -243,7 +243,7 @@ const ResultsView = ({ tests, onBack }) => {
       <div style={{
         backgroundColor: 'white',
         borderRadius: '0.75rem',
-        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
         border: '1px solid #e5e7eb'
       }}>
         <div style={{

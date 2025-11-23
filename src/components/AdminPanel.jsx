@@ -42,25 +42,49 @@ const AdminPanel = ({ tests, tags, onAddTest, onUpdateTest, onDeleteTest, onLogo
           fontWeight: 'bold',
           color: '#1f2937'
         }}>Панель управления</h2>
-        <button
-          onClick={handleCreateTest}
-          style={{
-            backgroundColor: '#2563eb',
-            color: 'white',
-            padding: '0.5rem 1.5rem',
-            borderRadius: '0.5rem',
-            border: 'none',
-            cursor: 'pointer',
-            fontWeight: '500',
-            transition: 'background-color 0.2s'
-          }}
-          onMouseOver={(e) => e.target.style.backgroundColor = '#1d4ed8'}
-          onMouseOut={(e) => e.target.style.backgroundColor = '#2563eb'}
-        >
-          + Создать тест
-        </button>
+        <div style={{
+          display: 'flex',
+          gap: '0.75rem'
+        }}>
+          <button
+            onClick={() => window.location.href = '/admin/results'}
+            style={{
+              backgroundColor: '#7c3aed',
+              color: 'white',
+              padding: '0.5rem 1.5rem',
+              borderRadius: '0.5rem',
+              border: 'none',
+              cursor: 'pointer',
+              fontWeight: '500',
+              transition: 'background-color 0.2s',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}
+            onMouseOver={(e) => e.target.style.backgroundColor = '#6d28d9'}
+            onMouseOut={(e) => e.target.style.backgroundColor = '#7c3aed'}
+          >
+            📊 Результаты
+          </button>
+          <button
+            onClick={handleCreateTest}
+            style={{
+              backgroundColor: '#2563eb',
+              color: 'white',
+              padding: '0.5rem 1.5rem',
+              borderRadius: '0.5rem',
+              border: 'none',
+              cursor: 'pointer',
+              fontWeight: '500',
+              transition: 'background-color 0.2s'
+            }}
+            onMouseOver={(e) => e.target.style.backgroundColor = '#1d4ed8'}
+            onMouseOut={(e) => e.target.style.backgroundColor = '#2563eb'}
+          >
+            + Создать тест
+          </button>
+        </div>
       </div>
-      
 
       {/* Статистика */}
       <div style={{
