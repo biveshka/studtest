@@ -512,7 +512,7 @@ const ResultsView = ({ onBack }) => {
             </p>
           </div>
         </div>
-
+            
         {renderResultsList()}
       </div>
     </div>

@@ -62,35 +62,42 @@ const Test = ({ tests, onSaveResult }) => {
   };
 
   const finishTest = () => {
-    const score = calculateScore();
-    const maxScore = test.max_score;
-    const percentage = Math.round((score / maxScore) * 100);
+  const score = calculateScore();
+  const maxScore = test.max_score;
+  const percentage = Math.round((score / maxScore) * 100);
 
-    console.log('Завершение теста:', {
-      testId: test.id,
-      score: score,
-      maxScore: maxScore,
-      percentage: percentage
-    });
+  console.log('🎯 Завершение теста:', {
+    testId: test.id,
+    testTitle: test.title,
+    userName: userName,
+    score: score,
+    maxScore: maxScore,
+    percentage: percentage
+  });
 
-    // Сохраняем результат
-    onSaveResult({
-      testId: test.id,
-      testTitle: test.title,
-      userName: userName,
-      score: score,
-      maxScore: maxScore,
-      percentage: percentage,
-      answers: test.questions.map(question => ({
-        questionId: question.id,
-        questionText: question.question_text,
-        userAnswer: userAnswers[question.id],
-        correctAnswer: question.correct_answer,
-        isCorrect: userAnswers[question.id] === question.correct_answer,
-        options: question.options
-      }))
-    });
+  // Сохраняем результат
+  const resultData = {
+    testId: test.id,
+    testTitle: test.title,
+    userName: userName,
+    score: score,
+    maxScore: maxScore,
+    percentage: percentage,
+    answers: test.questions.map(question => ({
+      questionId: question.id,
+      questionText: question.question_text,
+      userAnswer: userAnswers[question.id],
+      correctAnswer: question.correct_answer,
+      isCorrect: userAnswers[question.id] === question.correct_answer,
+      options: question.options
+    }))
   };
+
+  console.log('📤 Отправляем данные в onSaveResult:', resultData);
+  
+  // Вызываем функцию сохранения
+  onSaveResult(resultData);
+};
 
   const currentQuestion = test.questions[currentQuestionIndex];
   const progress = ((currentQuestionIndex + 1) / test.questions.length) * 100;
