@@ -7,7 +7,7 @@ import UserInterface from './components/UserInterface';
 import Test from './components/Test';
 import Results from './components/Results';
 import TestReviews from './components/TestReviews';
-import ResultsView from './components/ResultsView';
+import ResultsView from './components/ResultView';
 
 // Демо данные тестов с тегами и отзывами
 const DEMO_TESTS = [
