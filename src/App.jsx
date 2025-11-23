@@ -15,12 +15,12 @@ const DEMO_TESTS = [
     id: 1,
     title: "Тест по JavaScript",
     description: "Проверьте свои знания JavaScript",
-    question_count: 3,
-    max_score: 6,
+    question_count: 5,
+    max_score: 10,
     is_published: true,
     created_by: null,
-    average_rating: 4.5,
-    review_count: 12,
+    average_rating: 4.8,
+    review_count: 5,
     tags: [
       { id: 1, name: 'JavaScript', color: '#F7DF1E' },
       { id: 3, name: 'React', color: '#61DAFB' }
@@ -64,6 +64,20 @@ const DEMO_TESTS = [
         options: ["Только значение", "Только функцию обновления", "Массив [значение, функция]", "Объект с значением и функцией"],
         correct_answer: 2,
         points: 2
+      },
+      {
+        id: 104,
+        question_text: "Какой метод массива НЕ изменяет исходный массив?",
+        options: ["push()", "pop()", "splice()", "concat()"],
+        correct_answer: 3,
+        points: 2
+      },
+      {
+        id: 105,
+        question_text: "Что выведет следующий код? console.log(typeof null);",
+        options: ['"object"', '"null"', '"undefined"', '"number"'],
+        correct_answer: 0,
+        points: 2
       }
     ]
   },
@@ -71,8 +85,8 @@ const DEMO_TESTS = [
     id: 2,
     title: "Тест по HTML/CSS",
     description: "Основы веб-разработки",
-    question_count: 2,
-    max_score: 4,
+    question_count: 6,
+    max_score: 10,
     is_published: true,
     created_by: null,
     average_rating: 4.2,
@@ -104,6 +118,39 @@ const DEMO_TESTS = [
         options: ["<link>", "<a>", "<href>", "<url>"],
         correct_answer: 1,
         points: 2
+      },
+      {
+        id: 203,
+        question_text: "Какой CSS-селектор имеет наивысшую специфичность (приоритет) для элемента <p class=\"text\" id=\"main-text\">?",
+        options: ["p", ".text", "p.text", "#main-text"],
+        correct_answer: 3,
+        points: 2
+      },
+      {
+        id: 204,
+        question_text: "Что произойдет, если для элемента задать position: absolute; без указания свойств top, left, right или bottom?",
+        options: [
+          "Он останется на том же месте, как будто у него position: static;.",
+          "Он будет удален из потока документа и помещен в левый верхний угол ближайшего расположенного предка.",
+          "Он останется в потоке документа на своем обычном месте.",
+          "Он будет помещен в левый верхний угол окна браузера (viewport)."
+        ],
+        correct_answer: 0,
+        points: 2
+      },
+      {
+        id: 205,
+        question_text: "Какой HTML-тег следует использовать для семантического обозначения основной, уникальной части содержимого страницы (например, статьи или блога)?",
+        options: ["<section>", "<main>", "<div>", "<article>"],
+        correct_answer: 1,
+        points: 1
+      },
+      {
+        id: 206,
+        question_text: "Какой из следующих атрибутов тега <input> является булевым (не требует значения)?",
+        options: ["type", "placeholder", "required", "value"],
+        correct_answer: 2,
+        points: 1
       }
     ]
   },
@@ -111,8 +158,8 @@ const DEMO_TESTS = [
     id: 3,
     title: "Тест по Python",
     description: "Основы программирования на Python",
-    question_count: 5,
-    max_score: 10,
+    question_count: 3,
+    max_score: 6,
     is_published: true,
     created_by: null,
     average_rating: 4.7,
@@ -151,20 +198,6 @@ const DEMO_TESTS = [
         question_text: "Как объявить функцию в Python?",
         options: ["function myFunc()", "def myFunc()", "func myFunc()", "define myFunc()"],
         correct_answer: 1,
-        points: 2
-      },
-      {
-        id: 304,
-        question_text: "Что такое декоратор Python?",
-        options: ["Специальный тип комментария", "Функция, которая изменяет поведение другой функции", "Способ оформления кода", "Тип данных для декоративных строк"],
-        correct_answer: 1,
-        points: 2
-      },
-      {
-        id: 305,
-        question_text: "Что такое генератор в Python?",
-        options: ["Функция для создания случайных чисел", "Объект по итерации для последовательности", "Функция с yield вместо return", "Модуль для работы с электроэнергией"],
-        correct_answer: 2,
         points: 2
       }
     ]
@@ -294,6 +327,23 @@ const RoleSelection = ({ onRoleSelect }) => {
   );
 };
 
+// Функция для нормализации результатов
+const normalizeResults = (results) => {
+  if (!results) return [];
+  
+  return results.map(result => ({
+    id: result.id,
+    testId: result.test_id || result.testId,
+    testTitle: result.test_title || result.testTitle,
+    userName: result.user_name || result.userName,
+    score: result.score || 0,
+    maxScore: result.max_score || result.maxScore || 1,
+    percentage: result.percentage || ((result.max_score || result.maxScore || 1) > 0 ? 
+      Math.round(((result.score || 0) / (result.max_score || result.maxScore || 1)) * 100) : 0),
+    completedAt: result.completed_at || result.completedAt
+  }));
+};
+
 function App() {
   const [tests, setTests] = useState(DEMO_TESTS);
   const [tags] = useState(DEMO_TAGS);
@@ -314,7 +364,9 @@ function App() {
       setTests(JSON.parse(savedTests));
     }
     if (savedResults) {
-      setTestResults(JSON.parse(savedResults));
+      const results = normalizeResults(JSON.parse(savedResults));
+      setTestResults(results);
+      console.log('Нормализованные результаты:', results);
     }
   }, []);
 
@@ -404,17 +456,31 @@ function App() {
     }));
   };
 
-  // Новая функция для сохранения результатов теста
+  // Исправленная функция для сохранения результатов теста
   const handleSaveTestResult = (resultData) => {
+    const maxScore = resultData.maxScore || resultData.max_score || 1;
+    const score = resultData.score || 0;
+    const percentage = Math.round((score / maxScore) * 100);
+    
     const newResult = {
       id: Date.now(),
-      ...resultData,
-      completedAt: new Date().toISOString()
+      testId: resultData.testId,
+      testTitle: resultData.testTitle,
+      userName: resultData.userName,
+      score: score,
+      maxScore: maxScore,
+      percentage: percentage,
+      completedAt: new Date().toISOString(),
+      answers: resultData.answers || []
     };
     
     console.log('Сохранение результата:', newResult);
     
-    setTestResults(prev => [...prev, newResult]);
+    setTestResults(prev => {
+      const updatedResults = [...prev, newResult];
+      console.log('Все результаты после сохранения:', updatedResults);
+      return updatedResults;
+    });
     
     // Переходим на страницу результатов
     navigate(`/results/${resultData.testId}`);
@@ -477,7 +543,7 @@ function App() {
           element={
             <TestReviews 
               test={tests.find(t => t.id === parseInt(location.pathname.split('/').pop()))}
-              onAddReview={handleAddReview}
+              onAddReview={(review) => handleAddReview(parseInt(location.pathname.split('/').pop()), review)}
               onBack={() => navigate(-1)}
             />
           } 

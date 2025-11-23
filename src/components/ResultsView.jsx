@@ -5,21 +5,103 @@ const ResultsView = ({ onBack }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [tests, setTests] = useState([]);
   const [testResults, setTestResults] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Функция для нормализации результатов
+  const normalizeResults = (results) => {
+    if (!results) return [];
+    
+    return results.map(result => ({
+      id: result.id,
+      testId: result.test_id || result.testId,
+      testTitle: result.test_title || result.testTitle,
+      userName: result.user_name || result.userName,
+      score: result.score || 0,
+      maxScore: result.max_score || result.maxScore || 1,
+      percentage: result.percentage || ((result.max_score || result.maxScore || 1) > 0 ? 
+        Math.round(((result.score || 0) / (result.max_score || result.maxScore || 1)) * 100) : 0),
+      completedAt: result.completed_at || result.completedAt
+    }));
+  };
 
   // Загружаем данные из localStorage
   useEffect(() => {
-    const savedTests = localStorage.getItem('quizTests');
-    const savedResults = localStorage.getItem('quizResults');
+    console.log('🔍 ResultsView: Загрузка данных...');
     
-    if (savedTests) {
-      setTests(JSON.parse(savedTests));
-    }
-    if (savedResults) {
-      const results = JSON.parse(savedResults);
-      setTestResults(results);
-      console.log('Загружены результаты:', results);
-    }
+    const loadData = () => {
+      try {
+        const savedTests = localStorage.getItem('quizTests');
+        const savedResults = localStorage.getItem('quizResults');
+        
+        console.log('📁 quizTests из localStorage:', savedTests);
+        console.log('📁 quizResults из localStorage:', savedResults);
+        
+        if (savedTests) {
+          const parsedTests = JSON.parse(savedTests);
+          setTests(parsedTests);
+          console.log('✅ Тесты загружены:', parsedTests);
+        } else {
+          console.log('❌ Тесты не найдены в localStorage');
+        }
+        
+        if (savedResults) {
+          const parsedResults = normalizeResults(JSON.parse(savedResults));
+          setTestResults(parsedResults);
+          console.log('✅ Результаты загружены:', parsedResults);
+        } else {
+          console.log('❌ Результаты не найдены в localStorage');
+        }
+      } catch (error) {
+        console.error('❌ Ошибка загрузки данных:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
   }, []);
+
+  // Функция для создания демо-результатов
+  const createDemoResults = () => {
+    console.log('🔄 Создание демо-результатов...');
+    const demoResults = [
+      {
+        id: 1,
+        testId: 1,
+        testTitle: "Тест по JavaScript",
+        userName: "Иван Иванов",
+        score: 5,
+        maxScore: 6,
+        percentage: 83,
+        completedAt: "2024-01-20T10:30:00Z"
+      },
+      {
+        id: 2,
+        testId: 1, 
+        testTitle: "Тест по JavaScript",
+        userName: "Мария Петрова",
+        score: 6,
+        maxScore: 6,
+        percentage: 100,
+        completedAt: "2024-01-20T11:15:00Z"
+      },
+      {
+        id: 3,
+        testId: 3,
+        testTitle: "Тест по Python",
+        userName: "Алексей Сидоров",
+        score: 8,
+        maxScore: 10,
+        percentage: 80,
+        completedAt: "2024-01-20T12:00:00Z"
+      }
+    ];
+    
+    const normalizedResults = normalizeResults(demoResults);
+    setTestResults(normalizedResults);
+    localStorage.setItem('quizResults', JSON.stringify(normalizedResults));
+    console.log('✅ Демо-результаты созданы:', normalizedResults);
+  };
 
   const filteredResults = selectedTest 
     ? testResults.filter(result => result.testId === selectedTest.id)
@@ -55,12 +137,52 @@ const ResultsView = ({ onBack }) => {
     };
   };
 
+  if (loading) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        backgroundColor: '#f9fafb',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{
+          textAlign: 'center',
+          padding: '2rem'
+        }}>
+          <div style={{
+            fontSize: '3rem',
+            marginBottom: '1rem'
+          }}>⏳</div>
+          <h2 style={{
+            fontSize: '1.5rem',
+            fontWeight: 'bold',
+            color: '#1f2937',
+            marginBottom: '1rem'
+          }}>Загрузка результатов...</h2>
+          <p style={{ color: '#6b7280' }}>Пожалуйста, подождите</p>
+        </div>
+      </div>
+    );
+  }
+
   const renderResultsList = () => (
     <div style={{
       display: 'flex',
       flexDirection: 'column',
       gap: '1.5rem'
     }}>
+      {/* Отладочная информация */}
+      <div style={{
+        backgroundColor: '#fef3c7',
+        border: '1px solid #f59e0b',
+        borderRadius: '0.5rem',
+        padding: '1rem',
+        fontSize: '0.875rem'
+      }}>
+        <strong>Отладка:</strong> Загружено {testResults.length} результатов, {tests.length} тестов
+      </div>
+
       {/* Фильтры и поиск */}
       <div style={{
         display: 'flex',
@@ -320,6 +442,20 @@ const ResultsView = ({ onBack }) => {
               <p style={{
                 fontSize: '0.875rem'
               }}>{testResults.length === 0 ? 'Пока нет пройденных тестов' : 'Попробуйте изменить параметры поиска'}</p>
+              <button
+                onClick={createDemoResults}
+                style={{
+                  backgroundColor: '#2563eb',
+                  color: 'white',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '0.375rem',
+                  border: 'none',
+                  cursor: 'pointer',
+                  marginTop: '1rem'
+                }}
+              >
+                Создать демо-результаты
+              </button>
             </div>
           )}
         </div>
