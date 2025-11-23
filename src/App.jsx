@@ -457,34 +457,41 @@ function App() {
   };
 
   // Исправленная функция для сохранения результатов теста
-  const handleSaveTestResult = (resultData) => {
-    const maxScore = resultData.maxScore || resultData.max_score || 1;
-    const score = resultData.score || 0;
-    const percentage = Math.round((score / maxScore) * 100);
-    
-    const newResult = {
-      id: Date.now(),
-      testId: resultData.testId,
-      testTitle: resultData.testTitle,
-      userName: resultData.userName,
-      score: score,
-      maxScore: maxScore,
-      percentage: percentage,
-      completedAt: new Date().toISOString(),
-      answers: resultData.answers || []
-    };
-    
-    console.log('Сохранение результата:', newResult);
-    
-    setTestResults(prev => {
-      const updatedResults = [...prev, newResult];
-      console.log('Все результаты после сохранения:', updatedResults);
-      return updatedResults;
-    });
-    
-    // Переходим на страницу результатов
-    navigate(`/results/${resultData.testId}`);
+  // Исправленная функция для сохранения результатов теста
+const handleSaveTestResult = (resultData) => {
+  console.log('📝 Получены данные для сохранения:', resultData);
+  
+  const maxScore = resultData.maxScore || resultData.max_score || 1;
+  const score = resultData.score || 0;
+  const percentage = Math.round((score / maxScore) * 100);
+  
+  const newResult = {
+    id: Date.now(),
+    testId: resultData.testId,
+    testTitle: resultData.testTitle,
+    userName: resultData.userName,
+    score: score,
+    maxScore: maxScore,
+    percentage: percentage,
+    completedAt: new Date().toISOString(),
+    answers: resultData.answers || []
   };
+  
+  console.log('💾 Сохраняем результат:', newResult);
+  
+  setTestResults(prev => {
+    const updatedResults = [...prev, newResult];
+    console.log('✅ Все результаты после сохранения:', updatedResults);
+    
+    // Сохраняем в localStorage сразу
+    localStorage.setItem('quizResults', JSON.stringify(updatedResults));
+    
+    return updatedResults;
+  });
+  
+  // Переходим на страницу результатов
+  navigate(`/results/${resultData.testId}`);
+};
 
   const handleTagFilter = (tag) => {
     setSelectedTag(selectedTag?.id === tag.id ? null : tag);
