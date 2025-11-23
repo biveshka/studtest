@@ -3,12 +3,12 @@ import React, { useState, useEffect } from 'react';
 const ResultsView = ({ testResults: propsTestResults = [], tests: propsTests = [], onBack }) => {
   const [selectedTest, setSelectedTest] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [tests, setTests] = useState(propsTests);
-  const [testResults, setTestResults] = useState(propsTestResults);
-  const [loading, setLoading] = useState(false);
+  const [tests, setTests] = useState(propsTests || []);
+  const [testResults, setTestResults] = useState(propsTestResults || []);
+  const [loading, setLoading] = useState(true);
 
   // Функция для нормализации результатов
-  const normalizeResults = (results) => {
+  const normalizeResults = React.useCallback((results) => {
     if (!results) return [];
     
     return results.map(result => ({
@@ -22,9 +22,40 @@ const ResultsView = ({ testResults: propsTestResults = [], tests: propsTests = [
         Math.round(((result.score || 0) / (result.max_score || result.maxScore || 1)) * 100) : 0),
       completedAt: result.completed_at || result.completedAt
     }));
-  };
+  }, []);
 
-  // Обновляем данные при изменении пропсов
+  // Начальная загрузка данных при монтировании
+  useEffect(() => {
+    const loadInitialData = () => {
+      try {
+        // Загружаем тесты
+        const savedTests = localStorage.getItem('quizTests');
+        if (savedTests) {
+          const parsedTests = JSON.parse(savedTests);
+          if (parsedTests && parsedTests.length > 0) {
+            setTests(parsedTests);
+          }
+        }
+        
+        // Загружаем результаты
+        const savedResults = localStorage.getItem('quizResults');
+        if (savedResults) {
+          const parsedResults = normalizeResults(JSON.parse(savedResults));
+          if (parsedResults && parsedResults.length > 0) {
+            setTestResults(parsedResults);
+          }
+        }
+      } catch (error) {
+        console.error('Ошибка начальной загрузки данных:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadInitialData();
+  }, [normalizeResults]);
+
+  // Обновляем данные при изменении пропсов (приоритет пропсам)
   useEffect(() => {
     if (propsTests && propsTests.length > 0) {
       setTests(propsTests);
@@ -35,42 +66,30 @@ const ResultsView = ({ testResults: propsTestResults = [], tests: propsTests = [
     if (propsTestResults && propsTestResults.length > 0) {
       const normalized = normalizeResults(propsTestResults);
       setTestResults(normalized);
-    } else {
-      // Если пропсы пустые, пытаемся загрузить из localStorage
-      try {
-        const savedTests = localStorage.getItem('quizTests');
-        const savedResults = localStorage.getItem('quizResults');
-        
-        if (savedTests) {
-          const parsedTests = JSON.parse(savedTests);
-          setTests(parsedTests);
-        }
-        
-        if (savedResults) {
-          const parsedResults = normalizeResults(JSON.parse(savedResults));
-          setTestResults(parsedResults);
-        }
-      } catch (error) {
-        console.error('Ошибка загрузки данных из localStorage:', error);
-      }
     }
   }, [propsTestResults]);
 
 
   // Обогащаем результаты названиями тестов, если они отсутствуют
-  const enrichedResults = (testResults || []).map(result => {
-    if (!result.testTitle && result.testId && tests && tests.length > 0) {
-      const test = tests.find(t => {
-        const tId = t.id;
-        const rId = result.testId;
-        return tId === rId || tId === parseInt(rId) || parseInt(tId) === rId;
-      });
-      if (test) {
-        return { ...result, testTitle: test.title };
-      }
+  const enrichedResults = React.useMemo(() => {
+    if (!testResults || testResults.length === 0) {
+      return [];
     }
-    return result;
-  });
+    
+    return testResults.map(result => {
+      if (!result.testTitle && result.testId && tests && tests.length > 0) {
+        const test = tests.find(t => {
+          const tId = t.id;
+          const rId = result.testId;
+          return tId === rId || tId === parseInt(rId) || parseInt(tId) === rId;
+        });
+        if (test) {
+          return { ...result, testTitle: test.title };
+        }
+      }
+      return result;
+    });
+  }, [testResults, tests]);
 
   const filteredResults = selectedTest 
     ? enrichedResults.filter(result => {
