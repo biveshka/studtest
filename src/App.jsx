@@ -506,6 +506,7 @@ function App() {
                 onDeleteTest={handleDeleteTest}
                 onLogout={handleAdminLogout}
                 user={user}
+                testResults={testResults}
               />
             ) : (
               <Navigate to="/admin/login" replace />
@@ -519,8 +520,6 @@ function App() {
           element={
             isAuthenticated ? (
               <ResultsView 
-                tests={tests}
-                testResults={testResults}
                 onBack={() => navigate('/admin')}
               />
             ) : (

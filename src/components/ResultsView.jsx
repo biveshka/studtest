@@ -1,11 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-const ResultsView = ({ tests, testResults, onBack }) => {
+const ResultsView = ({ onBack }) => {
   const [selectedTest, setSelectedTest] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [tests, setTests] = useState([]);
+  const [testResults, setTestResults] = useState([]);
 
-  console.log('ResultsView - полученные результаты:', testResults);
-  console.log('ResultsView - тесты:', tests);
+  // Загружаем данные из localStorage
+  useEffect(() => {
+    const savedTests = localStorage.getItem('quizTests');
+    const savedResults = localStorage.getItem('quizResults');
+    
+    if (savedTests) {
+      setTests(JSON.parse(savedTests));
+    }
+    if (savedResults) {
+      const results = JSON.parse(savedResults);
+      setTestResults(results);
+      console.log('Загружены результаты:', results);
+    }
+  }, []);
 
   const filteredResults = selectedTest 
     ? testResults.filter(result => result.testId === selectedTest.id)
@@ -24,7 +38,6 @@ const ResultsView = ({ tests, testResults, onBack }) => {
     return '#dc2626';
   };
 
-  // Исправленная функция статистики
   const getTestStats = (testId) => {
     const resultsForTest = testResults.filter(result => result.testId === testId);
     if (resultsForTest.length === 0) return null;
