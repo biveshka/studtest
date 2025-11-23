@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import TestEditor from './TestEditor';
 
 const AdminPanel = ({ tests, tags, onAddTest, onUpdateTest, onDeleteTest, onLogout, user }) => {
   const [currentView, setCurrentView] = useState('dashboard');
   const [editingTest, setEditingTest] = useState(null);
+  const navigate = useNavigate();
 
   const handleCreateTest = () => {
     setEditingTest(null);
@@ -47,7 +49,7 @@ const AdminPanel = ({ tests, tags, onAddTest, onUpdateTest, onDeleteTest, onLogo
           gap: '0.75rem'
         }}>
           <button
-            onClick={() => window.location.href = '/admin/results'}
+            onClick={() => navigate('/admin/results')}
             style={{
               backgroundColor: '#7c3aed',
               color: 'white',
