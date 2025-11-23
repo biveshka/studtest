@@ -5,6 +5,7 @@ const ResultsView = ({ tests, testResults, onBack }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
   console.log('ResultsView - полученные результаты:', testResults);
+  console.log('ResultsView - тесты:', tests);
 
   const filteredResults = selectedTest 
     ? testResults.filter(result => result.testId === selectedTest.id)
@@ -12,8 +13,8 @@ const ResultsView = ({ tests, testResults, onBack }) => {
 
   const searchedResults = searchTerm
     ? filteredResults.filter(result => 
-        result.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (result.testTitle && result.testTitle.toLowerCase().includes(searchTerm.toLowerCase()))
+        result.userName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        result.testTitle?.toLowerCase().includes(searchTerm.toLowerCase())
       )
     : filteredResults;
 
@@ -28,7 +29,7 @@ const ResultsView = ({ tests, testResults, onBack }) => {
     const resultsForTest = testResults.filter(result => result.testId === testId);
     if (resultsForTest.length === 0) return null;
 
-    const percentages = resultsForTest.map(result => result.percentage);
+    const percentages = resultsForTest.map(result => result.percentage || 0);
     const avgScore = percentages.reduce((sum, percentage) => sum + percentage, 0) / percentages.length;
     const bestResult = Math.max(...percentages);
     const worstResult = Math.min(...percentages);
@@ -263,7 +264,7 @@ const ResultsView = ({ tests, testResults, onBack }) => {
                         fontSize: '0.875rem',
                         color: '#6b7280'
                       }}>
-                        {result.percentage || 0}%
+                        {(result.percentage || 0)}%
                       </div>
                     </div>
                   </div>
