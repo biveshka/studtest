@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
 import TestEditor from './TestEditor';
 
-const [currentView, setCurrentView] = useState('dashboard');
-const [editingTest, setEditingTest] = useState(null);
-const navigate = useNavigate();
 const AdminPanel = ({ tests, tags, onAddTest, onUpdateTest, onDeleteTest, onLogout, user }) => {
   const [currentView, setCurrentView] = useState('dashboard');
   const [editingTest, setEditingTest] = useState(null);
@@ -63,21 +60,7 @@ const AdminPanel = ({ tests, tags, onAddTest, onUpdateTest, onDeleteTest, onLogo
           + Создать тест
         </button>
       </div>
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-800">Панель управления</h2>
-        <div className="flex gap-3">
-          <button>
-            onClick={() => navigate('/admin/results')}
-            className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors"
-            📊 Результаты
-          </button>
-          <button>
-            onClick={handleCreateTest}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-            + Создать тест
-          </button>
-        </div>
-      </div>
+      
 
       {/* Статистика */}
       <div style={{

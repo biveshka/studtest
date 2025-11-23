@@ -7,7 +7,7 @@ import UserInterface from './components/UserInterface';
 import Test from './components/Test';
 import Results from './components/Results';
 import TestReviews from './components/TestReviews';
-import ResultsView from './components/ResultsView';
+
 
 // Демо данные тестов с тегами и отзывами
 const DEMO_TESTS = [
@@ -279,19 +279,6 @@ const RoleSelection = ({ onRoleSelect }) => {
                         Управление тестами
                     </div>
                 </button>
-                <Route 
-                  path="/admin/results" 
-                  element={
-                    isAuthenticated ? (
-                    <ResultsView 
-                      tests={tests}
-                      onBack={() => navigate('/admin')}
-                    />
-                    ) : (
-                      <Navigate to="/admin/login" replace />
-                    )
-                  } 
-               />
             </div>
 
             <div style={{
