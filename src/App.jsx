@@ -110,8 +110,8 @@ const DEMO_TESTS = [
     id: 3,
     title: "Тест по Python",
     description: "Основы программирования на Python",
-    question_count: 3,
-    max_score: 6,
+    question_count: 5,
+    max_score: 10,
     is_published: true,
     created_by: null,
     average_rating: 4.7,
@@ -149,6 +149,20 @@ const DEMO_TESTS = [
         id: 303,
         question_text: "Как объявить функцию в Python?",
         options: ["function myFunc()", "def myFunc()", "func myFunc()", "define myFunc()"],
+        correct_answer: 1,
+        points: 2
+      },
+      {
+        id: 304,
+        question_text: "Что такое декоратор Python?",
+        options: ["Специальный тип комментария", "Функция, которая изменяет поведение другой функции", "Способ оформления кода", "Тип данных для декоративных строк"],
+        correct_answer: 1,
+        points: 2
+      },
+      {
+        id: 305,
+        question_text: "Что такое генератор в Python?",
+        options: ["Функция для создания случайных чисел", "Объект по итерации для последовательности", "Функция с yeild вместо return", "Модуль для работы с электроэнергией"],
         correct_answer: 1,
         points: 2
       }
