@@ -355,7 +355,7 @@ function App() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Загрузка тестов и результатов из localStorage (только при первой загрузке)
+  // Загрузка тестов и результатов из localStorage
   useEffect(() => {
     const savedTests = localStorage.getItem('quizTests');
     const savedResults = localStorage.getItem('quizResults');
@@ -376,7 +376,7 @@ function App() {
         const results = normalizeResults(JSON.parse(savedResults));
         if (results && results.length > 0) {
           setTestResults(results);
-          console.log('Загружено результатов из localStorage:', results.length);
+          console.log('✅ Загружено результатов из localStorage:', results.length);
         }
       } catch (error) {
         console.error('Ошибка загрузки результатов:', error);
@@ -389,12 +389,26 @@ function App() {
     localStorage.setItem('quizTests', JSON.stringify(tests));
   }, [tests]);
 
-  // Сохранение результатов в localStorage (только если массив не пустой)
+  // Сохранение результатов в localStorage
   useEffect(() => {
-    if (testResults.length > 0) {
-      localStorage.setItem('quizResults', JSON.stringify(testResults));
-    }
+    localStorage.setItem('quizResults', JSON.stringify(testResults));
   }, [testResults]);
+
+  // Функция для обновления результатов
+  const updateTestResults = () => {
+    const savedResults = localStorage.getItem('quizResults');
+    if (savedResults) {
+      try {
+        const results = normalizeResults(JSON.parse(savedResults));
+        setTestResults(results);
+        console.log('🔄 Обновлены результаты:', results.length);
+        return results;
+      } catch (error) {
+        console.error('Ошибка обновления результатов:', error);
+      }
+    }
+    return testResults;
+  };
 
   const handleRoleSelection = (role) => {
     if (role === 'admin') {
@@ -472,60 +486,59 @@ function App() {
     }));
   };
 
-  // Исправленная функция для сохранения результатов теста
-  // Исправленная функция для сохранения результатов теста
-const handleSaveTestResult = (resultData) => {
-  console.log('📝 Получены данные для сохранения:', resultData);
-  
-  const maxScore = resultData.maxScore || resultData.max_score || 1;
-  const score = resultData.score || 0;
-  const percentage = resultData.percentage || Math.round((score / maxScore) * 100);
-  
-  const newResult = {
-    id: Date.now(),
-    testId: resultData.testId,
-    testTitle: resultData.testTitle,
-    userName: resultData.userName,
-    score: score,
-    maxScore: maxScore,
-    percentage: percentage,
-    completedAt: new Date().toISOString(),
-    answers: resultData.answers || []
+  // Функция для сохранения результатов теста
+  const handleSaveTestResult = (resultData) => {
+    console.log('📝 Получены данные для сохранения:', resultData);
+    
+    const maxScore = resultData.maxScore || resultData.max_score || 1;
+    const score = resultData.score || 0;
+    const percentage = resultData.percentage || Math.round((score / maxScore) * 100);
+    
+    const newResult = {
+      id: Date.now(),
+      testId: resultData.testId,
+      testTitle: resultData.testTitle,
+      userName: resultData.userName,
+      score: score,
+      maxScore: maxScore,
+      percentage: percentage,
+      completedAt: new Date().toISOString(),
+      answers: resultData.answers || []
+    };
+    
+    console.log('💾 Сохраняем результат:', newResult);
+    
+    // Используем функциональное обновление для гарантии актуальных данных
+    setTestResults(prev => {
+      // Проверяем, нет ли уже такого результата (по id или по комбинации testId + userName + completedAt)
+      const existingIndex = prev.findIndex(r => 
+        r.id === newResult.id || 
+        (r.testId === newResult.testId && 
+         r.userName === newResult.userName && 
+         Math.abs(new Date(r.completedAt).getTime() - new Date(newResult.completedAt).getTime()) < 1000)
+      );
+      
+      let updatedResults;
+      if (existingIndex >= 0) {
+        // Если результат уже есть, обновляем его
+        updatedResults = [...prev];
+        updatedResults[existingIndex] = newResult;
+      } else {
+        // Если результата нет, добавляем новый
+        updatedResults = [...prev, newResult];
+      }
+      
+      console.log('✅ Все результаты после сохранения:', updatedResults);
+      
+      // Сохраняем в localStorage сразу
+      localStorage.setItem('quizResults', JSON.stringify(updatedResults));
+      
+      return updatedResults;
+    });
+    
+    // Переходим на страницу результатов
+    navigate(`/results/${resultData.testId}`);
   };
-  
-  console.log('💾 Сохраняем результат:', newResult);
-  
-  // Используем функциональное обновление для гарантии актуальных данных
-  setTestResults(prev => {
-    // Проверяем, нет ли уже такого результата (по id или по комбинации testId + userName + completedAt)
-    const existingIndex = prev.findIndex(r => 
-      r.id === newResult.id || 
-      (r.testId === newResult.testId && 
-       r.userName === newResult.userName && 
-       Math.abs(new Date(r.completedAt).getTime() - new Date(newResult.completedAt).getTime()) < 1000)
-    );
-    
-    let updatedResults;
-    if (existingIndex >= 0) {
-      // Если результат уже есть, обновляем его
-      updatedResults = [...prev];
-      updatedResults[existingIndex] = newResult;
-    } else {
-      // Если результата нет, добавляем новый
-      updatedResults = [...prev, newResult];
-    }
-    
-    console.log('✅ Все результаты после сохранения:', updatedResults);
-    
-    // Сохраняем в localStorage сразу
-    localStorage.setItem('quizResults', JSON.stringify(updatedResults));
-    
-    return updatedResults;
-  });
-  
-  // Переходим на страницу результатов
-  navigate(`/results/${resultData.testId}`);
-};
 
   const handleTagFilter = (tag) => {
     setSelectedTag(selectedTag?.id === tag.id ? null : tag);
@@ -614,6 +627,7 @@ const handleSaveTestResult = (resultData) => {
                 onLogout={handleAdminLogout}
                 user={user}
                 testResults={testResults}
+                onUpdateResults={updateTestResults}
               />
             ) : (
               <Navigate to="/admin/login" replace />

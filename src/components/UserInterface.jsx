@@ -64,9 +64,47 @@ const UserInterface = ({ tests, tags, selectedTag, onTagFilter, onAddReview, onB
     return score;
   };
 
+  // Функция для сохранения результатов теста
+  const saveTestResult = (score, maxScore) => {
+    const percentage = Math.round((score / maxScore) * 100);
+    
+    const resultData = {
+      id: Date.now(),
+      testId: currentTest.id,
+      testTitle: currentTest.title,
+      userName: userName,
+      score: score,
+      maxScore: maxScore,
+      percentage: percentage,
+      completedAt: new Date().toISOString(),
+      answers: currentTest.questions.map(question => ({
+        questionId: question.id,
+        questionText: question.question_text,
+        userAnswer: userAnswers[question.id],
+        correctAnswer: question.correct_answer,
+        isCorrect: userAnswers[question.id] === question.correct_answer,
+        options: question.options
+      }))
+    };
+
+    console.log('💾 Сохраняем результат теста:', resultData);
+
+    // Сохраняем в localStorage
+    const existingResults = JSON.parse(localStorage.getItem('quizResults') || '[]');
+    const updatedResults = [...existingResults, resultData];
+    localStorage.setItem('quizResults', JSON.stringify(updatedResults));
+
+    console.log('✅ Результат сохранен в localStorage, всего результатов:', updatedResults.length);
+    
+    return resultData;
+  };
+
   const finishTest = () => {
     const score = calculateScore();
     const maxScore = currentTest.max_score;
+    
+    // Сохраняем результат
+    saveTestResult(score, maxScore);
     
     console.log('Результат теста:', { userName, score, maxScore, testId: currentTest.id });
     

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TestEditor from './TestEditor';
 
-const AdminPanel = ({ tests, tags, onAddTest, onUpdateTest, onDeleteTest, onLogout, user, testResults }) => {
+const AdminPanel = ({ tests, tags, onAddTest, onUpdateTest, onDeleteTest, onLogout, user, testResults, onUpdateResults }) => {
   const [currentView, setCurrentView] = useState('dashboard');
   const [editingTest, setEditingTest] = useState(null);
   const navigate = useNavigate();
@@ -33,9 +33,24 @@ const AdminPanel = ({ tests, tags, onAddTest, onUpdateTest, onDeleteTest, onLogo
   };
 
   const handleViewResults = () => {
+    // Обновляем результаты перед переходом
+    if (onUpdateResults) {
+      const updatedResults = onUpdateResults();
+      console.log('📊 Обновленные результаты перед переходом:', updatedResults?.length || testResults.length);
+    }
     console.log('📊 Переход к результатам, всего результатов:', testResults.length);
     console.log('📊 Данные результатов:', testResults);
     navigate('/admin/results');
+  };
+
+  const handleRefreshResults = () => {
+    if (onUpdateResults) {
+      const updatedResults = onUpdateResults();
+      console.log('🔄 Результаты обновлены:', updatedResults?.length || testResults.length);
+      alert(`Результаты обновлены! Всего результатов: ${updatedResults?.length || testResults.length}`);
+    } else {
+      alert('Функция обновления результатов недоступна');
+    }
   };
 
   const renderDashboard = () => (
@@ -52,8 +67,29 @@ const AdminPanel = ({ tests, tags, onAddTest, onUpdateTest, onDeleteTest, onLogo
         }}>Панель управления</h2>
         <div style={{
           display: 'flex',
-          gap: '0.75rem'
+          gap: '0.75rem',
+          flexWrap: 'wrap'
         }}>
+          <button
+            onClick={handleRefreshResults}
+            style={{
+              backgroundColor: '#059669',
+              color: 'white',
+              padding: '0.5rem 1rem',
+              borderRadius: '0.5rem',
+              border: 'none',
+              cursor: 'pointer',
+              fontWeight: '500',
+              transition: 'background-color 0.2s',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}
+            onMouseOver={(e) => e.target.style.backgroundColor = '#047857'}
+            onMouseOut={(e) => e.target.style.backgroundColor = '#059669'}
+          >
+            🔄 Обновить
+          </button>
           <button
             onClick={handleViewResults}
             style={{
@@ -206,142 +242,150 @@ const AdminPanel = ({ tests, tags, onAddTest, onUpdateTest, onDeleteTest, onLogo
           display: 'flex',
           flexDirection: 'column'
         }}>
-          {tests.map(test => (
-            <div key={test.id} style={{
-              padding: '1.5rem',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'flex-start',
-              borderBottom: '1px solid #f3f4f6'
-            }}>
-              <div style={{ flex: 1 }}>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  justifyContent: 'space-between',
-                  marginBottom: '0.5rem'
-                }}>
-                  <h4 style={{
-                    fontWeight: '600',
-                    color: '#1f2937',
-                    fontSize: '1.125rem'
-                  }}>{test.title}</h4>
-                  {test.average_rating > 0 && (
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.25rem',
-                      backgroundColor: '#fefce8',
-                      padding: '0.25rem 0.5rem',
-                      borderRadius: '0.375rem'
-                    }}>
-                      <span style={{ color: '#d97706' }}>★</span>
-                      <span style={{
-                        fontWeight: '500',
-                        color: '#92400e',
-                        fontSize: '0.875rem'
-                      }}>
-                        {test.average_rating.toFixed(1)}
-                      </span>
-                      <span style={{
-                        color: '#92400e',
-                        fontSize: '0.75rem'
-                      }}>({test.review_count})</span>
-                    </div>
-                  )}
-                </div>
-                
-                <p style={{
-                  color: '#6b7280',
-                  marginBottom: '0.75rem'
-                }}>{test.description}</p>
-                
-                {/* Теги теста */}
-                {test.tags && test.tags.length > 0 && (
+          {tests.map(test => {
+            const testResultsCount = testResults.filter(r => r.testId == test.id).length;
+            return (
+              <div key={test.id} style={{
+                padding: '1.5rem',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                borderBottom: '1px solid #f3f4f6'
+              }}>
+                <div style={{ flex: 1 }}>
                   <div style={{
                     display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: '0.25rem',
-                    marginBottom: '0.75rem'
+                    alignItems: 'flex-start',
+                    justifyContent: 'space-between',
+                    marginBottom: '0.5rem'
                   }}>
-                    {test.tags.map(tag => (
-                      <span
-                        key={tag.id}
-                        style={{
-                          padding: '0.25rem 0.5rem',
-                          borderRadius: '9999px',
-                          fontSize: '0.75rem',
+                    <h4 style={{
+                      fontWeight: '600',
+                      color: '#1f2937',
+                      fontSize: '1.125rem'
+                    }}>{test.title}</h4>
+                    {test.average_rating > 0 && (
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.25rem',
+                        backgroundColor: '#fefce8',
+                        padding: '0.25rem 0.5rem',
+                        borderRadius: '0.375rem'
+                      }}>
+                        <span style={{ color: '#d97706' }}>★</span>
+                        <span style={{
                           fontWeight: '500',
-                          color: 'white',
-                          backgroundColor: tag.color
-                        }}
-                      >
-                        {tag.name}
-                      </span>
-                    ))}
+                          color: '#92400e',
+                          fontSize: '0.875rem'
+                        }}>
+                          {test.average_rating.toFixed(1)}
+                        </span>
+                        <span style={{
+                          color: '#92400e',
+                          fontSize: '0.75rem'
+                        }}>({test.review_count})</span>
+                      </div>
+                    )}
                   </div>
-                )}
-                
+                  
+                  <p style={{
+                    color: '#6b7280',
+                    marginBottom: '0.75rem'
+                  }}>{test.description}</p>
+                  
+                  {/* Теги теста */}
+                  {test.tags && test.tags.length > 0 && (
+                    <div style={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: '0.25rem',
+                      marginBottom: '0.75rem'
+                    }}>
+                      {test.tags.map(tag => (
+                        <span
+                          key={tag.id}
+                          style={{
+                            padding: '0.25rem 0.5rem',
+                            borderRadius: '9999px',
+                            fontSize: '0.75rem',
+                            fontWeight: '500',
+                            color: 'white',
+                            backgroundColor: tag.color
+                          }}
+                        >
+                          {tag.name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  
+                  <div style={{
+                    display: 'flex',
+                    gap: '1rem',
+                    fontSize: '0.875rem',
+                    color: '#6b7280'
+                  }}>
+                    <span>Вопросов: {test.question_count}</span>
+                    <span>Баллов: {test.max_score}</span>
+                    <span style={{
+                      color: testResultsCount > 0 ? '#7c3aed' : '#6b7280',
+                      fontWeight: testResultsCount > 0 ? '600' : 'normal'
+                    }}>
+                      Результатов: {testResultsCount}
+                    </span>
+                    <span style={{
+                      padding: '0.25rem 0.5rem',
+                      borderRadius: '9999px',
+                      fontSize: '0.75rem',
+                      backgroundColor: test.is_published ? '#d1fae5' : '#fef3c7',
+                      color: test.is_published ? '#065f46' : '#92400e'
+                    }}>
+                      {test.is_published ? 'Опубликован' : 'Черновик'}
+                    </span>
+                  </div>
+                </div>
                 <div style={{
                   display: 'flex',
-                  gap: '1rem',
-                  fontSize: '0.875rem',
-                  color: '#6b7280'
+                  gap: '0.5rem',
+                  marginLeft: '1rem'
                 }}>
-                  <span>Вопросов: {test.question_count}</span>
-                  <span>Баллов: {test.max_score}</span>
-                  <span>Результатов: {testResults.filter(r => r.testId == test.id).length}</span>
-                  <span style={{
-                    padding: '0.25rem 0.5rem',
-                    borderRadius: '9999px',
-                    fontSize: '0.75rem',
-                    backgroundColor: test.is_published ? '#d1fae5' : '#fef3c7',
-                    color: test.is_published ? '#065f46' : '#92400e'
-                  }}>
-                    {test.is_published ? 'Опубликован' : 'Черновик'}
-                  </span>
+                  <button
+                    onClick={() => handleEditTest(test)}
+                    style={{
+                      backgroundColor: '#d97706',
+                      color: 'white',
+                      padding: '0.5rem 1rem',
+                      borderRadius: '0.5rem',
+                      border: 'none',
+                      cursor: 'pointer',
+                      transition: 'background-color 0.2s'
+                    }}
+                    onMouseOver={(e) => e.target.style.backgroundColor = '#b45309'}
+                    onMouseOut={(e) => e.target.style.backgroundColor = '#d97706'}
+                  >
+                    Редактировать
+                  </button>
+                  <button
+                    onClick={() => handleDeleteTest(test.id)}
+                    style={{
+                      backgroundColor: '#dc2626',
+                      color: 'white',
+                      padding: '0.5rem 1rem',
+                      borderRadius: '0.5rem',
+                      border: 'none',
+                      cursor: 'pointer',
+                      transition: 'background-color 0.2s'
+                    }}
+                    onMouseOver={(e) => e.target.style.backgroundColor = '#b91c1c'}
+                    onMouseOut={(e) => e.target.style.backgroundColor = '#dc2626'}
+                  >
+                    Удалить
+                  </button>
                 </div>
               </div>
-              <div style={{
-                display: 'flex',
-                gap: '0.5rem',
-                marginLeft: '1rem'
-              }}>
-                <button
-                  onClick={() => handleEditTest(test)}
-                  style={{
-                    backgroundColor: '#d97706',
-                    color: 'white',
-                    padding: '0.5rem 1rem',
-                    borderRadius: '0.5rem',
-                    border: 'none',
-                    cursor: 'pointer',
-                    transition: 'background-color 0.2s'
-                  }}
-                  onMouseOver={(e) => e.target.style.backgroundColor = '#b45309'}
-                  onMouseOut={(e) => e.target.style.backgroundColor = '#d97706'}
-                >
-                  Редактировать
-                </button>
-                <button
-                  onClick={() => handleDeleteTest(test.id)}
-                  style={{
-                    backgroundColor: '#dc2626',
-                    color: 'white',
-                    padding: '0.5rem 1rem',
-                    borderRadius: '0.5rem',
-                    border: 'none',
-                    cursor: 'pointer',
-                    transition: 'background-color 0.2s'
-                  }}
-                  onMouseOver={(e) => e.target.style.backgroundColor = '#b91c1c'}
-                  onMouseOut={(e) => e.target.style.backgroundColor = '#dc2626'}
-                >
-                  Удалить
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
           {tests.length === 0 && (
             <div style={{
               padding: '2rem',
