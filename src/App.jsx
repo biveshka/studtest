@@ -314,14 +314,7 @@ const RoleSelection = ({ onRoleSelect }) => {
                 </button>
             </div>
 
-            <div style={{
-                marginTop: '1.5rem',
-                textAlign: 'center',
-                color: '#6b7280',
-                fontSize: '0.875rem'
-            }}>
-                Версия 2.0 с тегами и отзывами
-            </div>
+            
         </div>
     </div>
   );
