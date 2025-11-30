@@ -97,10 +97,10 @@ const DEMO_TESTS = [
     reviews: [
       {
         id: 3,
-        user_name: "Алексей Козлов",
+        user_name: "Стуков Артем",
         rating: 5,
         comment: "Понятные вопросы, хорошая структура теста.",
-        created_at: "2024-01-13T09:15:00Z",
+        created_at: "2025-11-19T09:15:00Z",
         is_approved: true
       }
     ],
