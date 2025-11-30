@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TestEditor from './TestEditor';
 
-const AdminPanel = ({ tests, tags, onAddTest, onUpdateTest, onDeleteTest, onLogout, user }) => {
+const AdminPanel = ({ tests, tags, onAddTest, onUpdateTest, onDeleteTest, onLogout, user, testResults }) => {
   const [currentView, setCurrentView] = useState('dashboard');
   const [editingTest, setEditingTest] = useState(null);
   const navigate = useNavigate();
@@ -32,6 +32,12 @@ const AdminPanel = ({ tests, tags, onAddTest, onUpdateTest, onDeleteTest, onLogo
     }
   };
 
+  const handleViewResults = () => {
+    console.log('📊 Переход к результатам, всего результатов:', testResults.length);
+    console.log('📊 Данные результатов:', testResults);
+    navigate('/admin/results');
+  };
+
   const renderDashboard = () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       <div style={{
@@ -49,7 +55,7 @@ const AdminPanel = ({ tests, tags, onAddTest, onUpdateTest, onDeleteTest, onLogo
           gap: '0.75rem'
         }}>
           <button
-            onClick={() => navigate('/admin/results')}
+            onClick={handleViewResults}
             style={{
               backgroundColor: '#7c3aed',
               color: 'white',
@@ -66,7 +72,7 @@ const AdminPanel = ({ tests, tags, onAddTest, onUpdateTest, onDeleteTest, onLogo
             onMouseOver={(e) => e.target.style.backgroundColor = '#6d28d9'}
             onMouseOut={(e) => e.target.style.backgroundColor = '#7c3aed'}
           >
-            📊 Результаты
+            📊 Результаты ({testResults.length})
           </button>
           <button
             onClick={handleCreateTest}
@@ -147,13 +153,13 @@ const AdminPanel = ({ tests, tags, onAddTest, onUpdateTest, onDeleteTest, onLogo
             fontWeight: '600',
             color: '#374151',
             marginBottom: '0.5rem'
-          }}>Вопросов всего</h3>
+          }}>Всего результатов</h3>
           <p style={{
             fontSize: '2rem',
             fontWeight: 'bold',
             color: '#7c3aed'
           }}>
-            {tests.reduce((sum, test) => sum + test.question_count, 0)}
+            {testResults.length}
           </p>
         </div>
         <div style={{
@@ -284,6 +290,7 @@ const AdminPanel = ({ tests, tags, onAddTest, onUpdateTest, onDeleteTest, onLogo
                 }}>
                   <span>Вопросов: {test.question_count}</span>
                   <span>Баллов: {test.max_score}</span>
+                  <span>Результатов: {testResults.filter(r => r.testId == test.id).length}</span>
                   <span style={{
                     padding: '0.25rem 0.5rem',
                     borderRadius: '9999px',
