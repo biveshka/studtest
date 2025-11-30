@@ -6,10 +6,9 @@ import AdminLogin from './components/AdminLogin';
 import UserInterface from './components/UserInterface';
 import Test from './components/Test';
 import Results from './components/Results';
-import TestReviews from './components/TestReviews';
 import ResultsView from './components/ResultsView';
 
-// Демо данные тестов с тегами и отзывами
+// Демо данные тестов без отзывов
 const DEMO_TESTS = [
   {
     id: 1,
@@ -19,29 +18,9 @@ const DEMO_TESTS = [
     max_score: 10,
     is_published: true,
     created_by: null,
-    average_rating: 4.8,
-    review_count: 5,
     tags: [
       { id: 1, name: 'JavaScript', color: '#F7DF1E' },
       { id: 3, name: 'React', color: '#61DAFB' }
-    ],
-    reviews: [
-      {
-        id: 1,
-        user_name: "Иван Петров",
-        rating: 5,
-        comment: "Отличный тест! Очень полезные вопросы.",
-        created_at: "2024-01-15T10:30:00Z",
-        is_approved: true
-      },
-      {
-        id: 2,
-        user_name: "Мария Сидорова",
-        rating: 4,
-        comment: "Хороший тест, но можно добавить больше практических заданий.",
-        created_at: "2024-01-14T15:20:00Z",
-        is_approved: true
-      }
     ],
     questions: [
       {
@@ -89,20 +68,8 @@ const DEMO_TESTS = [
     max_score: 10,
     is_published: true,
     created_by: null,
-    average_rating: 4.2,
-    review_count: 8,
     tags: [
       { id: 2, name: 'HTML/CSS', color: '#E34F26' }
-    ],
-    reviews: [
-      {
-        id: 3,
-        user_name: "Стуков Артем",
-        rating: 5,
-        comment: "Понятные вопросы, хорошая структура теста.",
-        created_at: "2025-11-19T09:15:00Z",
-        is_approved: true
-      }
     ],
     questions: [
       {
@@ -162,21 +129,9 @@ const DEMO_TESTS = [
     max_score: 6,
     is_published: true,
     created_by: null,
-    average_rating: 4.7,
-    review_count: 15,
     tags: [
       { id: 4, name: 'Python', color: '#3776AB' },
       { id: 5, name: 'Алгоритмы', color: '#FF6B6B' }
-    ],
-    reviews: [
-      {
-        id: 4,
-        user_name: "Дмитрий Новиков",
-        rating: 5,
-        comment: "Отличный тест для начинающих изучать Python!",
-        created_at: "2024-01-12T14:45:00Z",
-        is_approved: true
-      }
     ],
     questions: [
       {
@@ -313,8 +268,6 @@ const RoleSelection = ({ onRoleSelect }) => {
                     </div>
                 </button>
             </div>
-
-            
         </div>
     </div>
   );
@@ -430,10 +383,7 @@ function App() {
       question_count: newTest.questions.length,
       max_score: newTest.questions.reduce((sum, q) => sum + q.points, 0),
       is_published: true,
-      created_by: user?.id || null,
-      average_rating: 0,
-      review_count: 0,
-      reviews: []
+      created_by: user?.id || null
     };
     setTests(prev => [...prev, testWithId]);
     navigate('/admin');
@@ -452,31 +402,6 @@ function App() {
 
   const handleDeleteTest = (testId) => {
     setTests(prev => prev.filter(test => test.id !== testId));
-  };
-
-  const handleAddReview = (testId, review) => {
-    setTests(prev => prev.map(test => {
-      if (test.id === testId) {
-        const newReview = {
-          ...review,
-          id: Date.now(),
-          user_name: 'Вы',
-          created_at: new Date().toISOString(),
-          is_approved: true
-        };
-        
-        const updatedReviews = [...(test.reviews || []), newReview];
-        const average_rating = updatedReviews.reduce((sum, r) => sum + r.rating, 0) / updatedReviews.length;
-        
-        return {
-          ...test,
-          reviews: updatedReviews,
-          average_rating: parseFloat(average_rating.toFixed(1)),
-          review_count: updatedReviews.length
-        };
-      }
-      return test;
-    }));
   };
 
   // Функция для сохранения результатов теста
@@ -556,7 +481,6 @@ function App() {
               tags={tags}
               selectedTag={selectedTag}
               onTagFilter={handleTagFilter}
-              onAddReview={handleAddReview}
               onBackToRoleSelection={() => navigate('/')}
             />
           } 
@@ -580,18 +504,6 @@ function App() {
             <Results 
               testResults={testResults}
               tests={tests}
-            />
-          } 
-        />
-
-        {/* Маршрут для отзывов */}
-        <Route 
-          path="/reviews/:testId" 
-          element={
-            <TestReviews 
-              test={tests.find(t => t.id === parseInt(location.pathname.split('/').pop()))}
-              onAddReview={(review) => handleAddReview(parseInt(location.pathname.split('/').pop()), review)}
-              onBack={() => navigate(-1)}
             />
           } 
         />

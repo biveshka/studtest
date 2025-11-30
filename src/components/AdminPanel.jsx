@@ -264,29 +264,6 @@ const AdminPanel = ({ tests, tags, onAddTest, onUpdateTest, onDeleteTest, onLogo
                       color: '#1f2937',
                       fontSize: '1.125rem'
                     }}>{test.title}</h4>
-                    {test.average_rating > 0 && (
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.25rem',
-                        backgroundColor: '#fefce8',
-                        padding: '0.25rem 0.5rem',
-                        borderRadius: '0.375rem'
-                      }}>
-                        <span style={{ color: '#d97706' }}>★</span>
-                        <span style={{
-                          fontWeight: '500',
-                          color: '#92400e',
-                          fontSize: '0.875rem'
-                        }}>
-                          {test.average_rating.toFixed(1)}
-                        </span>
-                        <span style={{
-                          color: '#92400e',
-                          fontSize: '0.75rem'
-                        }}>({test.review_count})</span>
-                      </div>
-                    )}
                   </div>
                   
                   <p style={{
