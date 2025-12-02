@@ -162,21 +162,13 @@ const DEMO_TESTS = [
     max_score: 6,
     is_published: true,
     created_by: null,
-    average_rating: 4.7,
-    review_count: 15,
+    average_rating: 5.0,
+    review_count: 0,
     tags: [
       { id: 4, name: 'Python', color: '#3776AB' },
       { id: 5, name: 'Алгоритмы', color: '#FF6B6B' }
     ],
     reviews: [
-      {
-        id: 5,
-        user_name: "Филиппов Александр",
-        rating: 5,
-        comment: "Отличный тест для начинающих изучать Python!",
-        created_at: "2025-11-25T14:45:00Z",
-        is_approved: true
-      }
     ],
     questions: [
       {
