@@ -19,7 +19,7 @@ const DEMO_TESTS = [
     max_score: 10,
     is_published: true,
     created_by: null,
-    average_rating: 4.8,
+    average_rating: 4.6,
     review_count: 5,
     tags: [
       { id: 1, name: 'JavaScript', color: '#F7DF1E' },
@@ -28,18 +28,42 @@ const DEMO_TESTS = [
     reviews: [
       {
         id: 1,
-        user_name: "Стуков Артем",
+        user_name: "Филиппов Александр",
         rating: 5,
-        comment: "Отличный тест! Очень полезные вопросы.",
-        created_at: "2025-11-22T10:30:00Z",
+        comment: "Отличный тест! Очень полезные вопросы по JavaScript и React. Особенно понравились вопросы про замыкания и useState.",
+        created_at: "2025-11-12T10:30:00Z",
         is_approved: true
       },
       {
         id: 2,
         user_name: "Загидуллин Дамир",
         rating: 4,
-        comment: "Хороший тест, но можно добавить больше практических заданий.",
+        comment: "Хороший тест, но можно добавить больше практических заданий. Вопросы про методы массива были полезными.",
         created_at: "2025-11-14T15:20:00Z",
+        is_approved: true
+      },
+      {
+        id: 3,
+        user_name: "Илькаев Наиль",
+        rating: 5,
+        comment: "Лучший тест по JavaScript что я проходил! Вопросы охватывают все основные темы. Особенно понравился вопрос про typeof null.",
+        created_at: "2025-11-18T11:45:00Z",
+        is_approved: true
+      },
+      {
+        id: 4,
+        user_name: "Сидоров Даниил",
+        rating: 4,
+        comment: "Хороший баланс теории и практики. Вопрос про React.createElement был неожиданным, но полезным.",
+        created_at: "2025-11-20T09:15:00Z",
+        is_approved: true
+      },
+      {
+        id: 5,
+        user_name: "Стуков Артем",
+        rating: 5,
+        comment: "Идеальный тест для подготовки к собеседованию на фронтенд-разработчика. Рекомендую всем!",
+        created_at: "2025-11-22T16:40:00Z",
         is_approved: true
       }
     ],
@@ -89,18 +113,74 @@ const DEMO_TESTS = [
     max_score: 10,
     is_published: true,
     created_by: null,
-    average_rating: 4.2,
+    average_rating: 4.3,
     review_count: 8,
     tags: [
       { id: 2, name: 'HTML/CSS', color: '#E34F26' }
     ],
     reviews: [
       {
-        id: 3,
-        user_name: "Стуков Артем",
+        id: 6,
+        user_name: "Загидуллин Дамир",
+        rating: 4,
+        comment: "Хороший базовый тест по HTML/CSS. Вопрос про специфичность селекторов был очень полезным.",
+        created_at: "2025-11-13T14:10:00Z",
+        is_approved: true
+      },
+      {
+        id: 7,
+        user_name: "Илькаев Наиль",
         rating: 5,
-        comment: "Понятные вопросы, хорошая структура теста.",
+        comment: "Отличный тест! Особенно понравились вопросы про семантическую верстку и булевые атрибуты.",
+        created_at: "2025-11-15T16:30:00Z",
+        is_approved: true
+      },
+      {
+        id: 8,
+        user_name: "Сидоров Даниил",
+        rating: 4,
+        comment: "Понятные вопросы, хорошая структура теста. Можно добавить больше вопросов про Flexbox и Grid.",
+        created_at: "2025-11-17T11:20:00Z",
+        is_approved: true
+      },
+      {
+        id: 9,
+        user_name: "Филиппов Александр",
+        rating: 5,
+        comment: "Идеальный тест для начинающих верстальщиков. Все основные темы охвачены.",
         created_at: "2025-11-19T09:15:00Z",
+        is_approved: true
+      },
+      {
+        id: 10,
+        user_name: "Стуков Артем",
+        rating: 4,
+        comment: "Хороший тест, но некоторые вопросы могли бы быть сложнее. В целом полезно для повторения основ.",
+        created_at: "2025-11-21T13:45:00Z",
+        is_approved: true
+      },
+      {
+        id: 11,
+        user_name: "Илькаев Наиль",
+        rating: 4,
+        comment: "Прошел тест второй раз для закрепления. Вопрос про position: absolute запомнился хорошо.",
+        created_at: "2025-11-23T10:05:00Z",
+        is_approved: true
+      },
+      {
+        id: 12,
+        user_name: "Сидоров Даниил",
+        rating: 5,
+        comment: "После этого теста лучше понимаю разницу между <main> и <article>. Спасибо!",
+        created_at: "2025-11-24T15:50:00Z",
+        is_approved: true
+      },
+      {
+        id: 13,
+        user_name: "Загидуллин Дамир",
+        rating: 4,
+        comment: "Хорошо структурированный тест. Рекомендую новичкам в веб-разработке.",
+        created_at: "2025-11-25T12:30:00Z",
         is_approved: true
       }
     ],
@@ -162,13 +242,133 @@ const DEMO_TESTS = [
     max_score: 6,
     is_published: true,
     created_by: null,
-    average_rating: 5.0,
-    review_count: 0,
+    average_rating: 4.7,
+    review_count: 15,
     tags: [
       { id: 4, name: 'Python', color: '#3776AB' },
       { id: 5, name: 'Алгоритмы', color: '#FF6B6B' }
     ],
     reviews: [
+      {
+        id: 14,
+        user_name: "Филиппов Александр",
+        rating: 5,
+        comment: "Отличный тест для начинающих изучать Python! Вопросы охватывают самые основы языка.",
+        created_at: "2025-11-12T08:20:00Z",
+        is_approved: true
+      },
+      {
+        id: 15,
+        user_name: "Илькаев Наиль",
+        rating: 5,
+        comment: "Простой и понятный тест. Идеально для тех, кто только начинает путь в программировании.",
+        created_at: "2025-11-13T16:45:00Z",
+        is_approved: true
+      },
+      {
+        id: 16,
+        user_name: "Сидоров Даниил",
+        rating: 4,
+        comment: "Хороший базовый тест, но хотелось бы больше вопросов про функции и их параметры.",
+        created_at: "2025-11-14T11:30:00Z",
+        is_approved: true
+      },
+      {
+        id: 17,
+        user_name: "Загидуллин Дамир",
+        rating: 5,
+        comment: "После этого теста стало понятно, как создавать списки и функции в Python. Спасибо!",
+        created_at: "2025-11-15T14:15:00Z",
+        is_approved: true
+      },
+      {
+        id: 18,
+        user_name: "Стуков Артем",
+        rating: 5,
+        comment: "Лучший тест для повторения основ Python. Особенно полезен перед собеседованием.",
+        created_at: "2025-11-16T09:40:00Z",
+        is_approved: true
+      },
+      {
+        id: 19,
+        user_name: "Филиппов Александр",
+        rating: 4,
+        comment: "Хороший тест, но оператор возведения в степень можно было объяснить подробнее.",
+        created_at: "2025-11-17T13:25:00Z",
+        is_approved: true
+      },
+      {
+        id: 20,
+        user_name: "Илькаев Наиль",
+        rating: 5,
+        comment: "Прошел тест третий раз - всегда полезно освежить знания по основам Python.",
+        created_at: "2025-11-18T17:50:00Z",
+        is_approved: true
+      },
+      {
+        id: 21,
+        user_name: "Сидоров Даниил",
+        rating: 5,
+        comment: "Тест помог понять разницу между разными способами создания функций. Спасибо!",
+        created_at: "2025-11-19T10:05:00Z",
+        is_approved: true
+      },
+      {
+        id: 22,
+        user_name: "Загидуллин Дамир",
+        rating: 4,
+        comment: "Полезный тест, но можно добавить вопросы про циклы и условные операторы.",
+        created_at: "2025-11-20T15:20:00Z",
+        is_approved: true
+      },
+      {
+        id: 23,
+        user_name: "Стуков Артем",
+        rating: 5,
+        comment: "Идеально для быстрой проверки знаний основ Python. Рекомендую всем начинающим.",
+        created_at: "2025-11-21T12:10:00Z",
+        is_approved: true
+      },
+      {
+        id: 24,
+        user_name: "Филиппов Александр",
+        rating: 5,
+        comment: "После этого теста решил углубиться в изучение Python. Отличный старт!",
+        created_at: "2025-11-22T14:35:00Z",
+        is_approved: true
+      },
+      {
+        id: 25,
+        user_name: "Илькаев Наиль",
+        rating: 4,
+        comment: "Хороший тест, но три вопроса - это маловато. Хотелось бы больше практики.",
+        created_at: "2025-11-23T16:55:00Z",
+        is_approved: true
+      },
+      {
+        id: 26,
+        user_name: "Сидоров Даниил",
+        rating: 5,
+        comment: "Тест помог подготовиться к экзамену по основам программирования. Спасибо!",
+        created_at: "2025-11-24T11:40:00Z",
+        is_approved: true
+      },
+      {
+        id: 27,
+        user_name: "Загидуллин Дамир",
+        rating: 5,
+        comment: "Лучший тест по Python для новичков! Все четко и по делу.",
+        created_at: "2025-11-25T10:15:00Z",
+        is_approved: true
+      },
+      {
+        id: 28,
+        user_name: "Стуков Артем",
+        rating: 4,
+        comment: "Хороший тест, но можно добавить вопросы про импорты и модули.",
+        created_at: "2025-11-25T14:45:00Z",
+        is_approved: true
+      }
     ],
     questions: [
       {
