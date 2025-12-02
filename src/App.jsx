@@ -171,10 +171,10 @@ const DEMO_TESTS = [
     reviews: [
       {
         id: 4,
-        user_name: "Дмитрий Новиков",
+        user_name: "Филиппов Александр",
         rating: 5,
         comment: "Отличный тест для начинающих изучать Python!",
-        created_at: "2024-01-12T14:45:00Z",
+        created_at: "2025-11-25T14:45:00Z",
         is_approved: true
       }
     ],
