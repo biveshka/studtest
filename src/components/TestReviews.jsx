@@ -364,7 +364,7 @@ const TestReviews = ({ test, onAddReview, onBack }) => {
                           fontWeight: '600',
                           color: '#1f2937'
                         }}>
-                          {review.user_name}
+                          {review.user_name || 'Анонимный пользователь'}
                         </span>
                       </div>
                       <span style={{
