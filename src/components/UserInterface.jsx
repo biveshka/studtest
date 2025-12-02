@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
+import TestReviews from './TestReviews';
 
-const UserInterface = ({ tests, tags, selectedTag, onTagFilter, onBackToRoleSelection }) => {
+const UserInterface = ({ tests, tags, selectedTag, onTagFilter, onAddReview, onBackToRoleSelection }) => {
   const [currentScreen, setCurrentScreen] = useState('testList');
   const [currentTest, setCurrentTest] = useState(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState({});
   const [userName, setUserName] = useState('');
   const [showNameModal, setShowNameModal] = useState(false);
+  const [showReviews, setShowReviews] = useState(false);
 
   const resetTest = () => {
     setCurrentTest(null);
@@ -15,6 +17,7 @@ const UserInterface = ({ tests, tags, selectedTag, onTagFilter, onBackToRoleSele
     setUserName('');
     setShowNameModal(false);
     setCurrentScreen('testList');
+    setShowReviews(false);
   };
 
   const startTest = (test) => {
@@ -110,9 +113,9 @@ const UserInterface = ({ tests, tags, selectedTag, onTagFilter, onBackToRoleSele
 
   const getScoreColor = (score, maxScore) => {
     const percentage = (score / maxScore) * 100;
-    if (percentage >= 80) return '#059669';
-    if (percentage >= 60) return '#d97706';
-    return '#dc2626';
+    if (percentage >= 80) return '#059669'; // green-600
+    if (percentage >= 60) return '#d97706'; // yellow-600
+    return '#dc2626'; // red-600
   };
 
   const renderNameInput = () => (
@@ -382,6 +385,29 @@ const UserInterface = ({ tests, tags, selectedTag, onTagFilter, onBackToRoleSele
                 }}>
                   {test.title}
                 </h3>
+                {test.average_rating > 0 && (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.25rem',
+                    backgroundColor: '#fefce8',
+                    padding: '0.25rem 0.5rem',
+                    borderRadius: '0.375rem'
+                  }}>
+                    <span style={{ color: '#d97706' }}>★</span>
+                    <span style={{
+                      fontSize: '0.875rem',
+                      fontWeight: '500',
+                      color: '#92400e'
+                    }}>
+                      {test.average_rating.toFixed(1)}
+                    </span>
+                    <span style={{
+                      fontSize: '0.75rem',
+                      color: '#92400e'
+                    }}>({test.review_count})</span>
+                  </div>
+                )}
               </div>
               
               <p style={{
@@ -462,6 +488,26 @@ const UserInterface = ({ tests, tags, selectedTag, onTagFilter, onBackToRoleSele
                   onMouseOut={(e) => e.target.style.backgroundColor = '#2563eb'}
                 >
                   Начать тест
+                </button>
+                <button
+                  onClick={() => {
+                    setCurrentTest(test);
+                    setShowReviews(true);
+                  }}
+                  style={{
+                    backgroundColor: '#6b7280',
+                    color: 'white',
+                    padding: '0.5rem',
+                    borderRadius: '0.5rem',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseOver={(e) => e.target.style.backgroundColor = '#4b5563'}
+                  onMouseOut={(e) => e.target.style.backgroundColor = '#6b7280'}
+                  title="Посмотреть отзывы"
+                >
+                  💬
                 </button>
               </div>
             </div>
@@ -779,7 +825,11 @@ const UserInterface = ({ tests, tags, selectedTag, onTagFilter, onBackToRoleSele
             </div>
 
             <div style={{
-              textAlign: 'center'
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '1rem'
             }}>
               <button
                 onClick={resetTest}
@@ -797,12 +847,44 @@ const UserInterface = ({ tests, tags, selectedTag, onTagFilter, onBackToRoleSele
               >
                 Пройти другой тест
               </button>
+              <button
+                onClick={() => {
+                  setShowReviews(true);
+                  setCurrentScreen('testList');
+                }}
+                style={{
+                  backgroundColor: '#7c3aed',
+                  color: 'white',
+                  padding: '0.75rem 2rem',
+                  borderRadius: '0.5rem',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseOver={(e) => e.target.style.backgroundColor = '#6d28d9'}
+                onMouseOut={(e) => e.target.style.backgroundColor = '#7c3aed'}
+              >
+                Оставить отзыв
+              </button>
             </div>
           </div>
         </div>
       </div>
     );
   };
+
+  if (showReviews && currentTest) {
+    return (
+      <TestReviews
+        test={currentTest}
+        onAddReview={(review) => {
+          onAddReview(currentTest.id, review);
+          setShowReviews(false);
+        }}
+        onBack={() => setShowReviews(false)}
+      />
+    );
+  }
 
   return (
     <div>

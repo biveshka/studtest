@@ -5,7 +5,7 @@ const ResultsView = ({ testResults: propsTestResults = [], tests: propsTests = [
   const [searchTerm, setSearchTerm] = useState('');
   const [tests, setTests] = useState(propsTests || []);
   const [testResults, setTestResults] = useState(propsTestResults || []);
-  const [loading, setLoading] = useState(false); // Изменено на false, так как данные передаются через пропсы
+  const [loading, setLoading] = useState(true);
 
   // Функция для нормализации результатов
   const normalizeResults = React.useCallback((results) => {
@@ -24,7 +24,36 @@ const ResultsView = ({ testResults: propsTestResults = [], tests: propsTests = [
     }));
   }, []);
 
-  // Обновляем данные при изменении пропсов
+  // Начальная загрузка данных при монтировании и обновление при возврате на страницу
+  const loadDataFromStorage = React.useCallback(() => {
+    try {
+      // Загружаем тесты
+      const savedTests = localStorage.getItem('quizTests');
+      if (savedTests) {
+        const parsedTests = JSON.parse(savedTests);
+        if (parsedTests && parsedTests.length > 0) {
+          setTests(parsedTests);
+        }
+      }
+      
+      // Загружаем результаты
+      const savedResults = localStorage.getItem('quizResults');
+      if (savedResults) {
+        const parsedResults = normalizeResults(JSON.parse(savedResults));
+        setTestResults(parsedResults); // Обновляем даже если пустой массив
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки данных:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [normalizeResults]);
+
+  useEffect(() => {
+    loadDataFromStorage();
+  }, [loadDataFromStorage]);
+
+  // Обновляем данные при изменении пропсов (приоритет пропсам)
   useEffect(() => {
     if (propsTests) {
       setTests(propsTests);
@@ -33,27 +62,45 @@ const ResultsView = ({ testResults: propsTestResults = [], tests: propsTests = [
 
   useEffect(() => {
     if (propsTestResults) {
-      console.log('📊 ResultsView получил результаты:', propsTestResults);
       const normalized = normalizeResults(propsTestResults);
       setTestResults(normalized);
     }
   }, [propsTestResults, normalizeResults]);
 
+  // Обновляем данные при фокусе на странице (когда пользователь возвращается)
+  useEffect(() => {
+    const handleFocus = () => {
+      loadDataFromStorage();
+    };
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        loadDataFromStorage();
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [loadDataFromStorage]);
+
+
   // Обогащаем результаты названиями тестов, если они отсутствуют
   const enrichedResults = React.useMemo(() => {
     if (!testResults || testResults.length === 0) {
-      console.log('📊 Нет результатов для обогащения');
       return [];
     }
-    
-    console.log('📊 Обогащаем результаты:', testResults);
     
     return testResults.map(result => {
       if (!result.testTitle && result.testId && tests && tests.length > 0) {
         const test = tests.find(t => {
           const tId = t.id;
           const rId = result.testId;
-          return tId == rId; // Используем нестрогое сравнение для совместимости типов
+          return tId === rId || tId === parseInt(rId) || parseInt(tId) === rId;
         });
         if (test) {
           return { ...result, testTitle: test.title };
@@ -67,7 +114,7 @@ const ResultsView = ({ testResults: propsTestResults = [], tests: propsTests = [
     ? enrichedResults.filter(result => {
         const testId = result.testId;
         const selectedId = selectedTest.id;
-        return testId == selectedId; // Используем нестрогое сравнение
+        return testId === selectedId || parseInt(testId) === selectedId || testId === parseInt(selectedId);
       })
     : enrichedResults;
 
@@ -94,7 +141,7 @@ const ResultsView = ({ testResults: propsTestResults = [], tests: propsTests = [
   const getTestStats = (testId) => {
     const resultsForTest = enrichedResults.filter(result => {
       const rTestId = result.testId;
-      return rTestId == testId; // Используем нестрогое сравнение
+      return rTestId === testId || parseInt(rTestId) === testId || rTestId === parseInt(testId);
     });
     if (resultsForTest.length === 0) return null;
 
@@ -111,12 +158,34 @@ const ResultsView = ({ testResults: propsTestResults = [], tests: propsTests = [
     };
   };
 
-  console.log('📊 Отображаемые результаты:', {
-    enrichedResults,
-    filteredResults,
-    searchedResults,
-    sortedResults
-  });
+  if (loading) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        backgroundColor: '#f9fafb',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{
+          textAlign: 'center',
+          padding: '2rem'
+        }}>
+          <div style={{
+            fontSize: '3rem',
+            marginBottom: '1rem'
+          }}>⏳</div>
+          <h2 style={{
+            fontSize: '1.5rem',
+            fontWeight: 'bold',
+            color: '#1f2937',
+            marginBottom: '1rem'
+          }}>Загрузка результатов...</h2>
+          <p style={{ color: '#6b7280' }}>Пожалуйста, подождите</p>
+        </div>
+      </div>
+    );
+  }
 
   const renderResultsList = () => (
     <div style={{
@@ -146,7 +215,7 @@ const ResultsView = ({ testResults: propsTestResults = [], tests: propsTests = [
             value={selectedTest?.id || ''}
             onChange={(e) => {
               const testId = e.target.value;
-              setSelectedTest(testId ? tests.find(t => t.id == testId) : null); // Используем нестрогое сравнение
+              setSelectedTest(testId ? tests.find(t => t.id === parseInt(testId)) : null);
             }}
             style={{
               padding: '0.5rem',
@@ -158,7 +227,7 @@ const ResultsView = ({ testResults: propsTestResults = [], tests: propsTests = [
             <option value="">Все тесты</option>
             {tests.map(test => (
               <option key={test.id} value={test.id}>
-                {test.title} ({enrichedResults.filter(r => r.testId == test.id).length}) {/* Используем нестрогое сравнение */}
+                {test.title}
               </option>
             ))}
           </select>
